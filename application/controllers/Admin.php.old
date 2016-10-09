@@ -1,0 +1,807 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+class Admin extends CI_Controller {
+
+    function __construct()
+	{
+	    parent::__construct();
+	    $this->load->helper('url');
+		$this->load->helper('form');
+		$this->load->helper('file');
+		$this->load->helper('directory');
+		$this->load->helper('array');
+
+		$this->load->library('tank_auth');
+	    $this->load->library('session');
+		$this->load->library('user_agent');
+		$this->load->library('googlemaps');
+
+	    $this->load->model('tank_auth/users');
+		$this->load->model('usermenu');
+		$this->load->model('post');
+		$this->load->model('dashboard');
+		$this->load->model('search');
+		$this->load->model('backend');
+		//Add 24-09-58
+		$this->load->model('unitdetail');
+	}
+
+	function ChkLogin()
+	{
+	    if (!$this->tank_auth->is_logged_in()) {
+			return 0;
+	    } else {
+			return 1;
+		}
+	}
+
+	function lang_check()
+	{
+		if (!$this->session->userdata('lang')){
+			$this->session->set_userdata('lang','th');
+		};
+	}
+
+	function header_inc($ChkLogin)
+	{
+		if ($ChkLogin==0) {
+			$sess_id = $this->session->userdata('user_id');
+			if(!empty($sess_id)){
+				$this->session->sess_destroy();
+			};
+			$data="header_nonauth";
+		} else {
+			$data="header_auth";
+		}
+		return $data;	
+	}
+
+	function user_profile($ChkLogin)
+	{
+		if ($ChkLogin==0) {
+			$data["Name"]="No_Profile";
+			$sess_id = $this->session->userdata('user_id');
+			if(!empty($sess_id)){
+				$this->session->sess_destroy();
+			};
+		} else {
+			$user_data = $this->users->get_user_by_id($this->tank_auth->get_user_id(),1);
+			$data['firstname'] = $user_data->firstname;
+			$data['lastname'] = $user_data->lastname;
+			if( !$this->session->userdata('image') == '' ){
+				$data['image'] = $this->session->userdata('image');
+			}else{
+				$data['image'] = '/images/blank_man.gif';
+			};
+			$data['lang'] = $this->session->userdata('lang');
+		};
+		return $data;
+	}
+
+	public function adminEditUnitDetail()
+	{
+		$checkAdmin=$this->backend->checkAdmin();
+		if ($checkAdmin==1){
+			$Token=$this->uri->segment(3);
+			$this->session->set_userdata('token',$Token);
+			$user_data = $this->users->get_user_by_id($this->tank_auth->get_user_id(),1);
+			$email=$user_data->email;
+			$DateCreate=date("Y-m-d");
+			$this->db->query('Update Post set AdminEdit="'.$email.'", AdminEditDate="'.$DateCreate.'" Where Token="'.$Token.'"');
+			$this->post11();
+		}
+	}
+
+
+	public function post11()
+	{
+		//if (!$this->session->userdata('token')){
+		//	$this->post->newPost();
+		//};
+		$this->post->newPost();
+		$this->session->set_userdata('lastpage','/');
+		$this->lang_check();
+		$ChkLogin=$this->ChkLogin();
+		$header=$this->header_inc($ChkLogin);
+		$profile=$this->user_profile($ChkLogin);
+
+		
+		$map = $this->postMapChange();
+		$data['map'] = $map;
+		$profile['map'] = $map;
+		$profile['HSNumber']=3;
+		$S['1']='<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false&libraries=places"></script>';
+		$S['2']='<script type="text/javascript">var centreGot = false;</script>';
+		$profile['HSrc']=$S;
+
+		$data['qProjectName']=$this->post->qProject();
+		$data['qTOOwner']=$this->post->qTOOwner();
+		$data['qTOProperty']=$this->post->qTOProperty();
+		$data['qTOAdvertising']=$this->post->qTOAdvertising();
+		$data['qPost']=$this->post->qPost();
+		$data['txtMapChange']=$this->txtMapChange();
+		$this->load->view($header,$profile);
+		$this->load->view('/admin/inputform1',$data);
+		$this->load->view('/admin/footer_post1',$data);
+
+	}
+
+	public function post2()
+	{
+		$this->post->newPost();
+		$this->session->set_userdata('lastpage','/');
+		$this->lang_check();
+		$ChkLogin=$this->ChkLogin();
+		$header=$this->header_inc($ChkLogin);
+		$profile=$this->user_profile($ChkLogin);
+		$profile['HSNumber']=2;
+		$S['1']='<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false&libraries=places"></script>';
+		$profile['HSrc']=$S;
+		$data['qProjectName']=$this->post->qProject();
+		$data['TOCondoSpec1']=$this->post->TOCondoSpec(1);
+		$data['TOCondoSpec2']=$this->post->TOCondoSpec(2);
+		$data['TOCondoSpec3']=$this->post->TOCondoSpec(3);
+		$this->load->view($header,$profile);
+		$this->load->view('/admin/inputform2',$data);
+		$this->load->view('/admin/footer_post2',$data);
+	}
+
+	function postMapChange()
+	{
+		$token=$this->session->userdata('token');
+		$query=$this->db->query('Select Lat, Lng from Post Where Token="'.$token.'"');
+		$row=$query->row();
+		$Lat=$row->Lat;
+		$Lng=$row->Lng;
+		
+		if ($Lat==0){
+			if ($this->agent->is_browser('Safari'))
+			{
+				$config['geocodeCaching'] = false;
+				$config['zoom'] = '16';
+				$config['center'] = '13.764934,100.5382955';
+				$config['map_height']= '300px';
+				$this->googlemaps->initialize($config);
+				$marker = array();
+				$marker['position'] = '13.764934,100.5382955';
+				$marker['draggable'] = true;
+				$marker['ondragend'] = 'updateDatabase(event.latLng.lat(), event.latLng.lng());';
+				$this->googlemaps->add_marker($marker);
+				//echo 'You are using Safari.';
+			} else {
+				$config = array();
+				$config['center'] = 'auto';
+				$config['onboundschanged'] = 'if (!centreGot) {
+					var mapCentre = map.getCenter();
+					marker_0.setOptions({
+					position: new google.maps.LatLng(mapCentre.lat(), mapCentre.lng()) 
+					});
+					}
+					centreGot = true;';
+				$config['geocodeCaching'] = TRUE;
+				$config['zoom'] = '16';
+				$config['map_height']= '300px';
+				$this->googlemaps->initialize($config);
+				$marker = array();
+				$marker['draggable'] = true;
+				$marker['ondragend'] = 'updateDatabase(event.latLng.lat(), event.latLng.lng());';
+				$this->googlemaps->add_marker($marker);
+			};
+		} else {
+			$config['geocodeCaching'] = false;
+			$config['zoom'] = '16';
+			$config['center'] = $Lat.','.$Lng;
+			$config['map_height']= '300px';
+			$this->googlemaps->initialize($config);
+			$marker = array();
+			$marker['position'] = $Lat.','.$Lng;
+			$marker['draggable'] = true;
+			$marker['ondragend'] = 'updateDatabase(event.latLng.lat(), event.latLng.lng());';
+			$this->googlemaps->add_marker($marker);
+		}
+		$return=$this->googlemaps->create_map();
+		return $return;
+	}
+
+	function txtMapChange()
+	{
+		$token=$this->session->userdata('token');
+		$query=$this->db->query('Select Lat, Lng from Post Where Token="'.$token.'"');
+		$row=$query->row();
+		$Lat=$row->Lat;
+		$Lng=$row->Lng;
+		if ($Lat!=0){
+			$txt="disabled";	
+		} else {
+			$txt="ไม่มีข้อมูลในฐานข้อมูลกรุณาปักหมุดเอง";
+		}
+		return $txt;
+	}
+
+	public function updatePost()
+	{
+		$this->post->AdminUpdatePost($_POST);
+	}
+	
+	public function updatePostStep($data)
+	{
+		$checkAdmin=$this->backend->checkAdmin();
+		if ($checkAdmin==1){
+			$Token=$this->session->userdata('token');
+			$this->db->query('update Post set Step'.$data.'="1" where Token="'.$Token.'"');
+			//Insert This Line for Change TotalPrice to NetPrice
+			$query=$this->db->query('select TOAdvertising from Post Where Token="'.$Token.'"');
+			$rowCheck=$query->row();
+			if ($rowCheck->TOAdvertising==1){
+				$this->db->query('Update Post Set TotalPrice=NetPrice Where Token="'.$Token.'"');
+				//$this->db->query('Update Post Set PricePerSq=TotalPrice/(useArea+terraceArea) Where Token="'.$Token.'"');
+				$this->db->query('Update Post Set PricePerSq=TotalPrice/(useArea) Where Token="'.$Token.'"');
+			}
+		}
+
+		
+	}
+
+	public function changePage1()
+	{
+		$checkAdmin=$this->backend->checkAdmin();
+		if ($checkAdmin==1){
+			if ($_POST['key_change']==0){
+				$this->updatePostStep(1);
+				$this->post11();
+			}
+			if ($_POST['key_change']==1){
+				$this->updatePostStep(1);
+				$this->post11();
+			}
+			if ($_POST['key_change']==2){
+				$this->updatePostStep(1);
+				$this->post2();
+			}
+			if ($_POST['key_change']==3){
+				$this->updatePostStep(2);
+				$this->post3();
+			}
+			if ($_POST['key_change']==4){
+				$this->updatePostStep(3);
+				//$this->post4();
+				redirect('/admin/post4', 'location');
+			}
+			if ($_POST['key_change']==5){
+				$this->updatePostStep(4);
+				$this->updatePostStep(5);
+				$this->post5();
+			}
+		}
+	}
+
+	public function updateCondoSpec()
+	{
+		$this->post->AdminUpdateCondoSpec($_POST);
+	}
+
+	public function post3()
+	{
+		$this->post->newPost();
+		$this->session->set_userdata('lastpage','/');
+		$this->lang_check();
+		$ChkLogin=$this->ChkLogin();
+		$header=$this->header_inc($ChkLogin);
+		$profile=$this->user_profile($ChkLogin);
+		$profile['HSNumber']=2;
+		$S['1']='<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false&libraries=places"></script>';
+		$profile['HSrc']=$S;
+		$data['qProjectName']=$this->post->qProject();
+		$data['TOCondoSpec1']=$this->post->TOCondoSpec(1);
+		$data['TOCondoSpec2']=$this->post->TOCondoSpec(2);
+		$data['TOCondoSpec3']=$this->post->TOCondoSpec(3);
+		$this->load->view($header,$profile);
+		$checkAdvertising=$this->post->checkAdvertising();
+		if ($this->post->AdminCheckPost('useArea')==0){
+			echo "<script>alert('กรุณาใส่พื้นที่ห้อง');window.location.href='/admin/changePage2/2';</script>";
+		} else {
+			if ($checkAdvertising==1){
+				$this->load->view('/admin/inputform31',$data);
+				$this->load->view('/admin/footer_post31',$data);
+			};
+			if ($checkAdvertising==3){
+				$this->load->view('/admin/inputform33',$data);
+				$this->load->view('/admin/footer_post33',$data);
+			};
+			if ($checkAdvertising==4){
+				$this->load->view('/admin/inputform34',$data);
+				$this->load->view('/admin/footer_post34',$data);
+			};
+			if ($checkAdvertising==5){
+				$this->load->view('/admin/inputform35',$data);
+				$this->load->view('/admin/footerstandard');
+				$this->load->view('/admin/footer_post35',$data);
+			};
+			if ($checkAdvertising==2){
+				$this->load->view('/admin/inputform32',$data);
+				$this->load->view('/admin/footer_post32',$data);
+			};
+		};
+				
+	}
+
+	public function post4(){
+		$this->post->newPost();
+		$this->session->set_userdata('lastpage','/');
+		$this->lang_check();
+		$ChkLogin=$this->ChkLogin();
+		$header=$this->header_inc($ChkLogin);
+		$profile=$this->user_profile($ChkLogin);
+		$profile['HSNumber']=2;
+		$S['1']='<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false&libraries=places"></script>';
+		$profile['HSrc']=$S;
+		$data['qProjectName']=$this->post->qProject();
+		$data['TOCondoSpec1']=$this->post->TOCondoSpec(1);
+		$data['TOCondoSpec2']=$this->post->TOCondoSpec(2);
+		$data['TOCondoSpec3']=$this->post->TOCondoSpec(3);
+		$data['POID'] =  $this->post->AdminGetPOID();
+		$this->post->ClearImgFail($data['POID']);
+		$data['user_id'] = $this->post->AdminGetUID();
+		$data['imgRoom'] = $this->post->qImg('room',$data['POID']);
+		$data['imgView'] = $this->post->qImg('view',$data['POID']);		
+		$data['imgFac'] = $this->post->qImg('facilities',$data['POID']);
+		
+		//$data['imgShare'] = $this->post->qImg_share($data['POID']);
+		$data['PID']= $this->post->qPID($data['POID']);
+		$data['PName'] = $this->post->qProjectName($data['POID']);
+		
+		$data['imgProjShare'] = $this->findDirectory($data['PName']);
+		$profile['ipage']= 4;
+		$this->load->view($header,$profile);
+		$this->load->view('/admin/inputform4',$data);
+		$this->load->view('/admin/footer_post4',$data);
+		
+		//$this->POST
+	}
+	private function findDirectory($pname){
+		//echo "find directory";
+		//echo "panme : ".$pname;
+		$map = directory_map('projImg/'.$pname.'/Picture');
+		//echo "map : ".$map;
+		if ($map!=false){
+			$total = sizeof($map);
+			$file = array();
+			for($i=0;$i<$total;$i++){
+				$file[$i] = 'projImg/'.$pname.'/Picture/'.$map[$i];
+			}
+			return $file;
+		} else {
+			$file[0]='projImg/no-icon.gif';
+			return $file;
+		}
+		
+	}
+
+	public function post5()
+	{
+		$this->post->newPost();
+		$this->session->set_userdata('lastpage','/');
+		$this->lang_check();
+		$ChkLogin=$this->ChkLogin();
+		$header=$this->header_inc($ChkLogin);
+		$profile=$this->user_profile($ChkLogin);
+		$profile['HSNumber']=2;
+		$S['1']='<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false&libraries=places"></script>';
+		$profile['HSrc']=$S;
+		$data['qProjectName']=$this->post->qProject();
+		$data['TOCondoSpec1']=$this->post->TOCondoSpec(1);
+		$data['TOCondoSpec2']=$this->post->TOCondoSpec(2);
+		$data['TOCondoSpec3']=$this->post->TOCondoSpec(3);
+		$this->load->view($header,$profile);
+		$this->load->view('/admin/inputform5',$data);
+		$this->load->view('/admin/footer_post5',$data);
+	}
+
+	public function postreport()
+	{
+		$checkAdmin=$this->backend->checkAdmin();
+		if ($checkAdmin==1){
+			$reportType=$this->uri->segment(3);
+			$data['reportType']=$reportType;
+			$DetailType=$this->uri->segment(4);
+			if ($DetailType==0){
+				$data['reportDetail']='NULL';
+				$data['reportDetailHeader']='NULL';
+			};
+			if ($DetailType==1){
+				$DateCreate=$this->uri->segment(5);
+				$data['reportDetailHeader']='New Post ('.$DateCreate.')';
+				if ($reportType==0){
+					$data['reportDetail']=$this->db->query('select Post.*,users.firstname,users.lastname from Post,users where Post.user_id=users.id and DateCreate="'.$DateCreate.'"');
+				} else {
+					$data['reportDetail']=$this->db->query('select Post.*,users.firstname,users.lastname from Post,users where Post.user_id=users.id and TOAdvertising="'.$reportType.'" and DateCreate="'.$DateCreate.'"');
+				}
+				
+			};
+			if ($DetailType==2){
+				$DateCreate=$this->uri->segment(5);
+				$data['reportDetailHeader']='Approve Post ('.$DateCreate.')';
+				if ($reportType==0){
+					$data['reportDetail']=$this->db->query('select Post.*,users.firstname,users.lastname from Post,users where Post.user_id=users.id and ApproveDate="'.$DateCreate.'"');
+				} else {
+					$data['reportDetail']=$this->db->query('select Post.*,users.firstname,users.lastname from Post,users where Post.user_id=users.id and TOAdvertising="'.$reportType.'" and ApproveDate="'.$DateCreate.'"');
+				}
+			};
+			if ($DetailType==3){
+				$DateCreate=$this->uri->segment(5);
+				$data['reportDetailHeader']='Block Post ('.$DateCreate.')';
+				if ($reportType==0){
+					$data['reportDetail']=$this->db->query('select Post.*,users.firstname,users.lastname from Post,users where Post.user_id=users.id and BlockDate="'.$DateCreate.'"');
+				} else {
+					$data['reportDetail']=$this->db->query('select Post.*,users.firstname,users.lastname from Post,users where Post.user_id=users.id and TOAdvertising="'.$reportType.'" and BlockDate="'.$DateCreate.'"');	
+				}
+			};
+			if ($DetailType==4){
+				$DateCreate=$this->uri->segment(5);
+				$data['reportDetailHeader']='Delete Post ('.$DateCreate.')';
+				if ($reportType==0){
+					$data['reportDetail']=$this->db->query('select Post.*,users.firstname,users.lastname from Post,users where Post.user_id=users.id and DelDate="'.$DateCreate.'"');
+				} else {
+					$data['reportDetail']=$this->db->query('select Post.*,users.firstname,users.lastname from Post,users where Post.user_id=users.id and TOAdvertising="'.$reportType.'" and DelDate="'.$DateCreate.'"');
+				}
+			};
+			$ChkLogin=$this->ChkLogin();
+			$header=$this->header_inc($ChkLogin);
+			$profile=$this->user_profile($ChkLogin);
+			$data['report']=$this->db->query('Select * from ReportSummary');
+			$this->load->view($header,$profile);
+			$this->load->view('/admin/postreport',$data);
+			$this->load->view('footerstandard');
+			$this->load->view('footer_home');
+		}
+	}
+	
+	public function usermanage()
+	{
+		$checkAdmin=$this->backend->checkAdmin();
+		if ($checkAdmin==1){
+			$ChkLogin=$this->ChkLogin();
+			$header=$this->header_inc($ChkLogin);
+			$profile=$this->user_profile($ChkLogin);
+			$this->load->view($header,$profile);
+			$data['nonactivated']=$this->db->query('Select * from users where activated=0');
+			if (isset($_POST['email'])){
+				if ($_POST['email']!=null and $_POST['email']!="" ){
+					$email=$_POST['email'];
+					$data['search']=$this->db->query('Select * from users where email like "%'.$email.'" or firstname like "%'.$email.'%" or lastname like "%'.$email.'"');
+				} else {
+					$data['search']="NULL";
+				}
+			} else {
+				$data['search']="NULL";
+			}
+			$this->load->view('/admin/usermanage',$data);
+			$this->load->view('footerstandard');
+			$this->load->view('footer_home');
+		};
+	}
+
+	public function activate_user()
+	{
+		$checkAdmin=$this->backend->checkAdmin();
+		if ($checkAdmin==1){
+			$user_id=$this->uri->segment(3);
+			$this->db->query('update users set activated=1 where id="'.$user_id.'"');
+			$this->usermanage();
+		};
+	}
+
+	public function deactivate_user()
+	{
+		$checkAdmin=$this->backend->checkAdmin();
+		if ($checkAdmin==1){
+			$user_id=$this->uri->segment(3);
+			$this->db->query('update users set activated=0 where id="'.$user_id.'"');
+			$this->usermanage();
+		};
+	}	
+	
+	public function reset_password()
+	{
+		$checkAdmin=$this->backend->checkAdmin();
+		if ($checkAdmin==1){
+			$user_id=$this->uri->segment(3);
+			$new_password=$_POST['new_password'];
+			$hasher = new PasswordHash(
+					$this->config->item('phpass_hash_strength', 'tank_auth'),
+					$this->config->item('phpass_hash_portable', 'tank_auth'));
+			$hashed_password = $hasher->HashPassword($new_password);
+			//echo $hashed_password;
+			$this->db->query('update users set password="'.$hashed_password.'" where id="'.$user_id.'"');
+			$this->usermanage();
+		};
+	}	
+
+
+	public function userreport()
+	{
+		$checkAdmin=$this->backend->checkAdmin();
+		if ($checkAdmin==1){
+			$ChkLogin=$this->ChkLogin();
+			$header=$this->header_inc($ChkLogin);
+			$profile=$this->user_profile($ChkLogin);
+			$data['report']=$this->db->query('Select * from ReportUser');
+			$this->load->view($header,$profile);
+			$this->load->view('/admin/userreport',$data);
+			$this->load->view('footerstandard');
+			$this->load->view('footer_home');			
+		}
+	}
+	
+	public function DetailListView()
+	{
+		$checkAdmin=$this->backend->checkAdmin();
+		if ($checkAdmin==1){
+			$ChkLogin=$this->ChkLogin();
+			$header=$this->header_inc($ChkLogin);
+			$profile=$this->user_profile($ChkLogin);
+			$POID=$this->uri->segment(3);
+			$data['POID']=$POID;
+			$data['report']=$this->db->query('Select * from LogViewPost Where POID="'.$POID.'" Order By LastUpdate');
+			$this->load->view($header,$profile);
+			$this->load->view('/admin/viewpostreport',$data);
+			$this->load->view('footerstandard');
+			$this->load->view('footer_home');			
+		}		
+	}
+	public function uploadResized()
+	{
+		if ($_POST) {
+			 //$userid=$this->session->userdata('user_id');
+			 $userid=$_POST['user_id'];
+			 $token=$this->session->userdata('token');
+			 define('IMG_DIR', 'userImg/'.$userid.'/'); 
+             if(!is_dir(IMG_DIR)) //create the folder if it's not already exists 
+             { 
+               mkdir(IMG_DIR,0755,TRUE); 
+             } 
+			define('UPLOAD_DIR', 'userImg/'.$userid.'/');
+			$img = $_POST['image'];
+			$imgType= $_POST['imgType'];
+			$orit=$_POST['orit'];
+			$img = str_replace('data:image/jpeg;base64,', '', $img);
+			$img = str_replace(' ', '+', $img);
+			$data = base64_decode($img);
+			$file = UPLOAD_DIR . uniqid() . '.jpg';
+			$success = file_put_contents($file, $data);
+			print $success ? $file : 'Unable to save the file.';
+			$record=$file;
+			$inFile = $file;
+			$outFile = UPLOAD_DIR . uniqid() . '.jpg';
+			$image = new Imagick($inFile);
+			if ($orit==3){
+			  $image->rotateImage(new ImagickPixel('none'), 180);
+			}
+			if ($orit==6){
+			  $image->rotateImage(new ImagickPixel('none'), 90);
+			}
+			if ($orit==8){
+			  $image->rotateImage(new ImagickPixel('none'), -90);
+			}
+			$width=$image->getImageWidth();
+			$ratio=$width/600;
+			if ($ratio>2.1){
+				$center_width=round($width/2);
+				$start_width=$center_width-630;
+				$image->cropImage(1260,600,$start_width,0);
+//				$image->writeImage($outFile);
+//				$record=$outFile;
+			}
+			$watermark = new Imagick();
+			$watermark->readImage("img/water.png");
+			// how big are the images?
+			$iWidth = $image->getImageWidth();
+			$iHeight = $image->getImageHeight();
+			$wWidth = $watermark->getImageWidth();
+			$wHeight = $watermark->getImageHeight();
+
+			if ($iHeight < $wHeight || $iWidth < $wWidth) {
+				// resize the watermark
+				$watermark->scaleImage($iWidth, $iHeight);
+
+				// get new size
+				$wWidth = $watermark->getImageWidth();
+				$wHeight = $watermark->getImageHeight();
+			}
+
+			// calculate the position
+			$x = ($iWidth - $wWidth) / 2;
+			$y = ($iHeight - $wHeight) / 2;
+
+			$image->compositeImage($watermark, imagick::COMPOSITE_OVER, $x, $y);			
+			$image->writeImage($outFile);
+			$record=$outFile;
+			$query=$this->db->query('select POID from Post Where Token="'.$token.'"');
+			$row=$query->row();
+			$POID=$row->POID;
+			$this->db->query('insert into ImagePost set POID="'.$POID.'", file="/'.$record.'", type="'.$imgType.'"');
+			$this->db->query('insert into checkUpload set user_id="'.$userid.'", token="'.$token.'"');
+		}		
+	}
+
+	public function report_email_respond(){
+		$checkAdmin=$this->backend->checkAdmin();
+		if ($checkAdmin==1){
+			$ChkLogin=$this->ChkLogin();
+			$header=$this->header_inc($ChkLogin);
+			$profile=$this->user_profile($ChkLogin);
+			$data['report']=$this->db->query('Select Count(RenewPost) as RenewPost, Count(ClosePost) as ClosePost, Count(RentPost) as RentPost, Count(HidePost) as HidePost, Date from ActivePostByEmail Group By Date');
+			$this->load->view($header,$profile);
+			$this->load->view('/admin/email_respond_report',$data);
+			$this->load->view('footerstandard');
+			$this->load->view('footer_home');
+		}			
+	}
+	
+	public function newpostreport()
+	{
+		$checkAdmin=$this->backend->checkAdmin();
+		if ($checkAdmin==1){
+			$reportType=$this->uri->segment(3);
+			$data['reportType']=$reportType;
+			$DetailType=$this->uri->segment(4);
+			if ($DetailType==0){
+				$data['reportDetail']='NULL';
+				$data['reportDetailHeader']='NULL';
+			};
+			//DetailType=1 == NewPost , DateCreate= Segment(5)
+			if ($DetailType==1){
+				$DateCreate=$this->uri->segment(5);
+				$data['reportDetailHeader']='New Post ('.$DateCreate.')';
+				if ($reportType==0){
+					$data['reportDetail']=$this->db->query('select Post.*,users.firstname,users.lastname from Post,users where Post.user_id=users.id and DateCreate="'.$DateCreate.'"');	
+				} else {
+					$data['reportDetail']=$this->db->query('select Post.*,users.firstname,users.lastname from Post,users where Post.user_id=users.id and TOAdvertising="'.$reportType.'" and DateCreate="'.$DateCreate.'"');
+				}
+				
+			};
+			//DetailType=2 == ApproveDate
+			if ($DetailType==2){
+				$DateCreate=$this->uri->segment(5);
+				$data['reportDetailHeader']='Approve Post ('.$DateCreate.')';
+				if ($reportType==0){
+					$data['reportDetail']=$this->db->query('select Post.*,users.firstname,users.lastname from Post,users where Post.user_id=users.id and ApproveDate="'.$DateCreate.'"');
+				} else {
+					$data['reportDetail']=$this->db->query('select Post.*,users.firstname,users.lastname from Post,users where Post.user_id=users.id and TOAdvertising="'.$reportType.'" and ApproveDate="'.$DateCreate.'"');
+				}
+			};
+			//DetailType=3 == Block Non Approve
+			if ($DetailType==3){
+				$DateCreate=$this->uri->segment(5);
+				$data['reportDetailHeader']='Block Post ('.$DateCreate.')';
+				if ($reportType==0){
+					$data['reportDetail']=$this->db->query('select Post.*,users.firstname,users.lastname from Post,users where Post.user_id=users.id and BlockDate="'.$DateCreate.'" and ApproveDate<>"000-00-00"');
+				} else {
+					$data['reportDetail']=$this->db->query('select Post.*,users.firstname,users.lastname from Post,users where Post.user_id=users.id and TOAdvertising="'.$reportType.'" and BlockDate="'.$DateCreate.'" and ApproveDate<>"000-00-00"');	
+				}
+			};
+			//DetailType=4 == Expire Post
+			if ($DetailType==4){
+				$DateCreate=$this->uri->segment(5);
+				$data['reportDetailHeader']='Expire Post ('.$DateCreate.')';
+				if ($reportType==0){
+					$data['reportDetail']=$this->db->query('select Post.*,users.firstname,users.lastname from Post,users where Post.user_id=users.id and DateExpire="'.$DateCreate.'" and ApproveDate<>"000-00-00" and Active=92');
+				} else {
+					$data['reportDetail']=$this->db->query('select Post.*,users.firstname,users.lastname from Post,users where Post.user_id=users.id and TOAdvertising="'.$reportType.'" and DateExpire="'.$DateCreate.'" and ApproveDate<>"000-00-00" and Active=92');
+				}
+			};
+			//DetailType=5 ==> Post Wait ReApprove
+			if ($DetailType==5){
+				$DateCreate=$this->uri->segment(5);
+				$data['reportDetailHeader']='ประกาศรอตรวจสอบอีกครั้ง';
+				if ($reportType==0){
+					$data['reportDetail']=$this->db->query('select Post.*,users.firstname,users.lastname from Post,users where Post.user_id=users.id and Active=0 and ApproveDate<>"0000-00-00"');
+				} else {
+					$data['reportDetail']=$this->db->query('select Post.*,users.firstname,users.lastname from Post,users where Post.user_id=users.id and Active=0 and ApproveDate<>"0000-00-00" and TOAdvertising="'.$reportType.'"');
+				}
+			};
+			//DetailType=6 == Re Approve Post
+			if ($DetailType==6){
+				$DateCreate=$this->uri->segment(5);
+				$data['reportDetailHeader']='Reapprove Post ('.$DateCreate.')';
+				if ($reportType==0){
+					$data['reportDetail']=$this->db->query('select Post.*,users.firstname,users.lastname from Post,users where Post.user_id=users.id and ReApproveDate="'.$DateCreate.'"');
+				} else {
+					$data['reportDetail']=$this->db->query('select Post.*,users.firstname,users.lastname from Post,users where Post.user_id=users.id and TOAdvertising="'.$reportType.'" and ReApproveDate="'.$DateCreate.'"');
+				}
+			};
+			$ChkLogin=$this->ChkLogin();
+			$header=$this->header_inc($ChkLogin);
+			$profile=$this->user_profile($ChkLogin);
+			$data['report']=$this->db->query('Select * from ReportNewSummaryPost');
+			$this->load->view($header,$profile);
+			$this->load->view('/admin/newpostreport',$data);
+			$this->load->view('footerstandard');
+			$this->load->view('footer_home');
+		}
+	}
+
+	public function postexpire()
+	{
+		$checkAdmin=$this->backend->checkAdmin();
+		if ($checkAdmin==1){
+			$reportType=$this->uri->segment(3);
+			$data['reportType']=$reportType;
+			$DetailType=$this->uri->segment(4);
+			if ($DetailType==0){
+				$data['reportDetail']='NULL';
+				$data['reportDetailHeader']='NULL';
+			};						
+			$ChkLogin=$this->ChkLogin();
+			$header=$this->header_inc($ChkLogin);
+			$profile=$this->user_profile($ChkLogin);
+			$ThisDate=date("Y-m-d",mktime(0, 0, 0, date("m")  , date("d"), date("Y")));
+			if ($reportType==0){
+				$data['report']=$this->db->query('Select * from Post Where Active=92 and DateExpire<"'.$ThisDate.'" order by DateExpire');
+				$data['reportTypeHeader']="ข้อมูลหมดอายุทั้งหมด";	
+			};
+			if ($reportType==1){
+				$ThisDate2=date("Y-m-d",mktime(0, 0, 0, date("m")  , date("d")-7, date("Y")));
+				$data['report']=$this->db->query('Select * from Post Where Active=92 and DateExpire<"'.$ThisDate.'" and DateExpire>="'.$ThisDate2.'"  order by DateExpire');
+				$data['reportTypeHeader']="ข้อมูลหมดอายุไม่เกิน 7วัน";	
+			};
+			if ($reportType==2){
+				$ThisDate2=date("Y-m-d",mktime(0, 0, 0, date("m")  , date("d")-30, date("Y")));
+				$data['report']=$this->db->query('Select * from Post Where Active=92 and DateExpire<"'.$ThisDate.'" and DateExpire>="'.$ThisDate2.'"  order by DateExpire');
+				$data['reportTypeHeader']="ข้อมูลหมดอายุไม่เกิน 30วัน";	
+			};
+			$this->load->view($header,$profile);
+			$this->load->view('/admin/postexpire',$data);
+			$this->load->view('footerstandard');
+			$this->load->view('footer_home');
+		}
+	}
+
+	public function renewpost()
+	{
+		$checkAdmin=$this->backend->checkAdmin();
+		if ($checkAdmin==1){
+			$POID=$this->uri->segment(3);
+			$DateExpire=date("Y-m-d",mktime(0, 0, 0, date("m")  , date("d")+45, date("Y")));
+			$this->db->query('update Post Set DateExpire="'.$DateExpire.'", Active=1 Where POID="'.$POID.'"');
+			redirect('/admin/postexpire/0/0', 'refresh');
+		}	
+	}
+
+	public function rentpost()
+	{
+		$checkAdmin=$this->backend->checkAdmin();
+		if ($checkAdmin==1){
+			$POID=$this->uri->segment(3);
+			$TOAdvertising=$this->uri->segment(4);
+			if ($TOAdvertising==5){
+				$this->db->query('update Post Set Active=81 Where POID="'.$POID.'"');
+			} else {
+				$this->db->query('update Post Set Active=82 Where POID="'.$POID.'"');
+			}
+			redirect('/admin/postexpire/0/0', 'refresh');
+		}	
+	}
+
+	public function hidepost()
+	{
+		$checkAdmin=$this->backend->checkAdmin();
+		if ($checkAdmin==1){
+			$POID=$this->uri->segment(3);
+			$this->db->query('update Post Set Active=93 Where POID="'.$POID.'"');
+			redirect('/admin/postexpire/0/0', 'refresh');
+		}	
+	}
+	
+	public function cancelpost()
+	{
+		$checkAdmin=$this->backend->checkAdmin();
+		if ($checkAdmin==1){
+			$POID=$this->uri->segment(3);
+			$this->db->query('update Post Set Active=90 Where POID="'.$POID.'"');
+			redirect('/admin/postexpire/0/0', 'refresh');
+		}	
+	}			
+}
+?>

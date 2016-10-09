@@ -1,0 +1,1108 @@
+<?php
+class Post extends CI_Model {
+ 
+    function __construct()
+     {
+         // Call the Model constructor
+         parent::__construct();
+     }
+     
+     function qTOOwner()
+     {
+        $this->db->query('SET NAMES utf8');
+        $this->db->query('SET character_set_results=utf8');
+        $query=$this->db->query('select * from TOOwner Where Active=1 Order By TOOID');
+        return $query;
+     }
+
+     function qRentNational()
+     {
+        $this->db->query('SET NAMES utf8');
+        $this->db->query('SET character_set_results=utf8');
+        $query=$this->db->query('select * from RentNational');
+        return $query;
+     }
+	 
+	 function qTOProperty()
+	 {
+        $this->db->query('SET NAMES utf8');
+        $this->db->query('SET character_set_results=utf8');
+        $query=$this->db->query('select * from TOProperty Where Active=1 Order By TOPID');
+        return $query;
+	 }			
+ 
+	 function qTOAdvertising()
+	 {
+        $this->db->query('SET NAMES utf8');
+        $this->db->query('SET character_set_results=utf8');
+        $query=$this->db->query('select * from TOAdvertising Where Active=1 Order By TOAID');
+        return $query;
+	 }	
+	
+	 function qProject()
+	 {
+        $this->db->query('SET NAMES utf8');
+        $this->db->query('SET character_set_results=utf8');
+        $query=$this->db->query('select * from Project Order By PName_th');
+        return $query;
+	 }
+
+	 function qPost()
+	 {
+		$token=$this->session->userdata('token');
+        $this->db->query('SET NAMES utf8');
+        $this->db->query('SET character_set_results=utf8');
+        $query=$this->db->query('select * from Post Where Token="'.$token.'"');
+        return $query;
+	 }
+
+	 function newPost()
+	 {
+		$datecreate=date("Y-m-d H:i:s");
+		$user_id=$this->session->userdata('user_id');
+		$this->db->query('SET NAMES utf8');
+		$this->db->query('SET character_set_results=utf8');
+		$token=$this->session->userdata('token');
+		$query=$this->db->query('Select * from Post Where Token="'.$token.'"');
+		$chk_row=$query->num_rows();
+		if ($user_id==""){
+			redirect('/auth/login/');
+		} else {
+			if ($chk_row==0){
+				$token=time().$user_id;
+				$token=md5($token);
+				$this->session->set_userdata('token',$token);
+				$this->db->query('Insert into Post set Token="'.$token.'", user_id="'.$user_id.'", DateCreate="'.$datecreate.'"');
+				$this->db->query('update Post set DateExpire=DATE_ADD(DateCreate, INTERVAL AgreePostDay DAY) where Token="'.$token.'" and user_id="'.$user_id.'"');
+			};
+		};
+	 }
+
+	 function newPost2()
+	 {
+		$datecreate=date("Y-m-d H:i:s");
+		$user_id=$this->session->userdata('user_id');
+		if ($user_id==""){
+			redirect('/auth/login/');
+		} else {
+			$this->db->query('SET NAMES utf8');
+			$this->db->query('SET character_set_results=utf8');
+			$token=time().$user_id;
+			$token=md5($token);
+			$this->session->set_userdata('token',$token);
+			$this->db->query('Insert into Post set Token="'.$token.'", user_id="'.$user_id.'", DateCreate="'.$datecreate.'"');
+			$this->db->query('update Post set DateExpire=DATE_ADD(DateCreate, INTERVAL AgreePostDay DAY) where Token="'.$token.'" and user_id="'.$user_id.'"');
+		};
+	 }
+
+	function updatePost1($data)
+	{
+		$token=$this->session->userdata('token');
+		$TOOwner=$data['TOOwner'];
+		$TOProperty=$data['TOProperty'];
+		$ProjectName=$data['ProjectName'];
+		$TOAdvertising=$data['TOAdvertising'];
+		$OwnerName=$data['OwnerName'];
+		$this->db->query('SET NAMES utf8');
+        $this->db->query('SET character_set_results=utf8');
+		$prefix="PName_".$this->session->userdata('lang');
+		$query=$this->db->query('Select PID, Lat, Lng, Area, Province from Project Where '.$prefix.'="'.$ProjectName.'"');
+		if ($query->num_rows()==0){
+			$PID=0;
+			$this->db->query('Update Post set TOOwner="'.$TOOwner.'", TOProperty="'.$TOProperty.'", ProjectName="'.$ProjectName.'", TOAdvertising="'.$TOAdvertising.'", PID="'.$PID.'", OwnerName="'.$OwnerName.'" Where Token="'.$token.'"');
+		} else {
+			$row = $query->row(); 
+			$PID=$row->PID;
+			$Lat=$row->Lat;
+			$Lng=$row->Lng;
+			$Area=$row->Area;
+			$Province=$row->Province;
+			$this->db->query('Update Post set TOOwner="'.$TOOwner.'", TOProperty="'.$TOProperty.'", ProjectName="'.$ProjectName.'", TOAdvertising="'.$TOAdvertising.'", PID="'.$PID.'", Lat="'.$Lat.'", Lng="'.$Lng.'", OwnerName="'.$OwnerName.'", Area="'.$Area.'", Province="'.$Province.'" Where Token="'.$token.'"');
+		};
+		if ($ProjectName!=''){
+			$this->db->query('Update Post set Step1="1" Where Token="'.$token.'"');
+		} else {
+			$this->db->query('Update Post set Step1="0" Where Token="'.$token.'"');
+		}
+	}
+
+	function update_TOOwner($data)
+	{
+		$this->db->query('Update Post set TOOwner="'.$data['TOOwner'].'" Where Token="'.$data['Token'].'"');
+	}
+
+	function update_TOProperty($data)
+	{
+		$this->db->query('Update Post set TOProperty="'.$data['TOProperty'].'" Where Token="'.$data['Token'].'"');
+	}
+
+	function update_TOAdvertising($data)
+	{
+		$this->db->query('Update Post set TOAdvertising="'.$data['TOAdvertising'].'" Where Token="'.$data['Token'].'"');
+	}
+
+	function update_OwnerName($data)
+	{
+		$this->db->query('Update Post set OwnerName="'.$data['OwnerName'].'" Where Token="'.$data['Token'].'"');
+	}
+
+	function update_ProjectName($data)
+	{
+		$query=$this->db->query('Select PID,PName_th from Project Where (PName_th="'.$data['ProjectName'].'" or PName_en="'.$data['ProjectName'].'")');
+		if ($query->num_rows() > 0){
+			$row=$query->row();
+			$PID=$row->PID;
+			$ProjectName=$row->PName_th;
+		} else {
+			$PID='';
+			$ProjectName=$data['ProjectName'];
+		}
+		$this->db->query('LOCK TABLES Post WRITE;');
+		$this->db->query('Update Post set PID="'.$PID.'", ProjectName="'.$ProjectName.'", Lat="'.$data['Lat'].'", Lng="'.$data['Lng'].'" Where Token="'.$data['Token'].'"');
+		$this->db->query('UNLOCK TABLES;');
+	}
+	
+	function LatLngProject($data)
+	{
+		$PName=$data['id'];
+		$query=$this->db->query('Select Lat, Lng from Project Where (PName_th="'.$PName.'" or PName_en="'.$PName.'")');
+		if ($query->num_rows()!=0){
+			$row=$query->row();
+			$Lat=$row->Lat;
+			$Lng=$row->Lng;
+			$dataLL=array($Lat,$Lng);
+		} else {
+			$dataLL=array(0,0);
+		}
+		echo json_encode($dataLL);
+	}
+
+	function TOCondoSpec($data)
+	{
+		$this->db->query('SET NAMES utf8');
+        $this->db->query('SET character_set_results=utf8');
+        $query=$this->db->query('select * from TOCondoSpec Where GCSID="'.$data.'" and Active=1 Order By TOCSID');
+		return $query;
+	}
+
+	function updateCondoSpec($data)
+	{
+		$user_id=$this->session->userdata('user_id');
+		$TOCSID=$data['TOCSID'];
+		$Token=$data['Token'];
+		$query=$this->db->query('Select POID from Post Where Token="'.$Token.'" and user_id="'.$user_id.'"');
+		$row=$query->row();
+		$POID=$row->POID;
+		$query=$this->db->query('Select * from PostCondoSpec Where POID="'.$POID.'" and TOCSID="'.$TOCSID.'"');
+		if ($query->num_rows()==0){
+			$this->db->query('Insert into PostCondoSpec set POID="'.$POID.'", TOCSID="'.$TOCSID.'"');
+		} else {
+			$this->db->query('Delete from PostCondoSpec Where POID="'.$POID.'" and TOCSID="'.$TOCSID.'"');
+		}
+
+	}
+
+	function AdminUpdateCondoSpec($data)
+	{
+		$TOCSID=$data['TOCSID'];
+		$Token=$data['Token'];
+		$query=$this->db->query('Select POID from Post Where Token="'.$Token.'"');
+		$row=$query->row();
+		$POID=$row->POID;
+		$query=$this->db->query('Select * from PostCondoSpec Where POID="'.$POID.'" and TOCSID="'.$TOCSID.'"');
+		if ($query->num_rows()==0){
+			$this->db->query('Insert into PostCondoSpec set POID="'.$POID.'", TOCSID="'.$TOCSID.'"');
+		} else {
+			$this->db->query('Delete from PostCondoSpec Where POID="'.$POID.'" and TOCSID="'.$TOCSID.'"');
+		}
+	}
+
+	function checkCondoSpec($TOCSID)
+	{
+		$user_id=$this->session->userdata('user_id');
+		$Token=$this->session->userdata('token');
+		$query=$this->db->query('Select POID from Post Where Token="'.$Token.'" and user_id="'.$user_id.'"');
+		$row=$query->row();
+		$POID=$row->POID;
+		$query=$this->db->query('Select * from PostCondoSpec Where POID="'.$POID.'" and TOCSID="'.$TOCSID.'"');
+		if ($query->num_rows()==0){
+			$data="";
+		} else {
+			$data="Checked";
+		}
+		return $data;
+	}
+
+	function AdminCheckCondoSpec($TOCSID)
+	{
+		//$user_id=$this->session->userdata('user_id');
+		$Token=$this->session->userdata('token');
+		$query=$this->db->query('Select POID from Post Where Token="'.$Token.'"');
+		$row=$query->row();
+		$POID=$row->POID;
+		$query=$this->db->query('Select * from PostCondoSpec Where POID="'.$POID.'" and TOCSID="'.$TOCSID.'"');
+		if ($query->num_rows()==0){
+			$data="";
+		} else {
+			$data="Checked";
+		}
+		return $data;
+	}
+
+	function updatePost($data)
+	{
+		$user_id=$this->session->userdata('user_id');
+		$Token=$data['Token'];
+		$Value=$data['Value'];
+		$Type=$data['Type'];
+		$this->db->query('Update Post set '.$Type.'="'.$Value.'" Where Token="'.$Token.'" and user_id="'.$user_id.'"');
+		if ($Type=="AgreePostDay"){
+			$this->db->query('update Post set DateExpire=DATE_ADD(DateCreate, INTERVAL AgreePostDay DAY) where Token="'.$Token.'" and user_id="'.$user_id.'"');
+		}
+		if ($Type=='OwnerName'){
+			$this->deactive($Token);
+			$this->db->query('Update Post set Step1="0" Where Token="'.$Token.'" and user_id="'.$user_id.'"');
+		}
+		if ($Type=='Tower'||$Type=='RoomNumber'||$Type=='Address'){
+			$this->deactive($Token);
+			$this->db->query('Update Post set Step2="0" Where Token="'.$Token.'" and user_id="'.$user_id.'"');
+		}	
+		
+	}
+
+	function AdminUpdatePost($data)
+	{
+		$Token=$data['Token'];
+		$Value=$data['Value'];
+		$Type=$data['Type'];
+		$this->db->query('Update Post set '.$Type.'="'.$Value.'" Where Token="'.$Token.'"');
+	}
+
+	function updatePostDCondo($data)
+	{
+		$user_id=$this->session->userdata('user_id');
+		$Token=$data['Token'];
+		$query=$this->db->query('Select POID from Post Where user_id="'.$user_id.'" and Token="'.$Token.'"');
+		$row=$query->row();
+		$POID=$row->POID;
+		$Value=$data['Value'];
+		$Type=$data['Type'];
+		$DPaymentTime=substr($Type, 2);
+		$Type=substr($Type, 0, 2);
+		if ($Type=="DP"){
+			$Type="DPaymentPrice";
+		};
+		if ($Type=="DD"){
+			$Type="DPaymentDate";
+		};
+		if ($Type=="DH"){
+			$Type="HistoryDPayment";
+		};
+		$query=$this->db->query('Select id from PostDCondo Where DPaymentTime="'.$DPaymentTime.'" and Token="'.$Token.'" and user_id="'.$user_id.'"');
+		$CheckRow=$query->num_rows();
+		if ($CheckRow==0){
+			$this->db->query('Insert into PostDCondo set '.$Type.'="'.$Value.'", DPaymentTime="'.$DPaymentTime.'", Token="'.$Token.'", user_id="'.$user_id.'", POID="'.$POID.'"' );
+		} else {
+			$this->db->query('Update PostDCondo set '.$Type.'="'.$Value.'" Where Token="'.$Token.'" and user_id="'.$user_id.'" and DPaymentTime="'.$DPaymentTime.'"');		
+		}
+	}	
+
+	function checkPostDCondo($data)
+	{
+		$user_id=$this->session->userdata('user_id');
+		$Token=$this->session->userdata('token');
+		$DPaymentTime=substr($data, 2);
+		$Type=substr($data, 0, 2);
+		if ($Type=="DP"){
+			$Type="DPaymentPrice";
+		};
+		if ($Type=="DD"){
+			$Type="DPaymentDate";
+		};
+		if ($Type=="DH"){
+			$Type="HistoryDPayment";
+		};
+		$query=$this->db->query('Select '.$Type.' from PostDCondo Where DPaymentTime="'.$DPaymentTime.'" and Token="'.$Token.'" and user_id="'.$user_id.'"');
+		if ($query->num_rows()!=0)
+		{
+			$data2=$query->row();
+			return $data2->$Type; 
+		} else {
+			$data2="";
+			return '0';
+		}
+	}
+	function checkPost($data)
+	{
+		$user_id=$this->session->userdata('user_id');
+		$Token=$this->session->userdata('token');
+		$query=$this->db->query('select * from Post Where Token="'.$Token.'" and user_id="'.$user_id.'"');
+		if ($query->num_rows()!=0){
+			$row=$query->row();
+			return $row->$data;
+		} else {
+			return "";
+		};
+	}
+
+	function AdminCheckPost($data)
+	{
+		$Token=$this->session->userdata('token');
+		$query=$this->db->query('select * from Post Where Token="'.$Token.'"');
+		if ($query->num_rows()!=0){
+			$row=$query->row();
+			return $row->$data;
+		} else {
+			return "";
+		};
+	}
+
+	function direction()
+	{
+		$query=$this->db->query('Select * from Direction');
+		return $query;
+	}
+
+	function checkPostCondo()
+	{
+		$user_id=$this->session->userdata('user_id');
+		$Token=$this->session->userdata('token');
+		$query=$this->db->query('select * from Post Where Token="'.$Token.'" and user_id="'.$user_id.'"');
+		if ($query->num_rows()!=0){
+			$row=$query->row();
+			if ($row->TOProperty==1){
+				$data="disabled";
+			} else {
+				$data="";
+			};
+		} else {
+			$data="";
+		}
+		return $data;
+	}
+
+	function checkAdvertising()
+	{
+		$user_id=$this->session->userdata('user_id');
+		$Token=$this->session->userdata('token');
+		$query=$this->db->query('select * from Post Where Token="'.$Token.'"');
+		$row=$query->row();
+		return $row->TOAdvertising;
+	}
+
+	function updatePost2($data)
+	{
+		if (!isset($data['Bedroom'])){
+			$data['Bedroom']=0;
+		};
+		if (!isset($data['Bathroom'])){
+			$data['Bathroom']=0;
+		};
+		if (!isset($data['Direction'])){
+			$data['Direction']=0;
+		};
+		if (!isset($data['ACarPark'])){
+			$data['ACarPark']=0;
+		};
+		if (!isset($data['NCarPark'])){
+			$data['NCarPark']=0;
+		};
+		if (!isset($data['OCarPark'])){
+			$data['OCarPark']=0;
+		};
+		if (!isset($data['Address'])){
+			$data['Address']=null;
+		};
+		$dataSQL=array($data['Tower'], $data['RoomNumber'], $data['Address'], $data['Floor'], $data['Bedroom'], $data['Bathroom'], $data['Direction'], $data['useArea'],  $data['terraceArea'], $data['OCarPark'], $data['ACarPark'], $data['NCarPark'], $this->session->userdata('user_id'), $this->session->userdata('token'));
+		$query=$this->db->query('Update Post set Tower= ?, RoomNumber= ?, Address= ?, Floor= ?, Bedroom= ?, Bathroom= ?, Direction= ?, useArea= ?, terraceArea= ?, OCarPark= ?, ACarPark= ?, NCarPark= ? Where user_id=? and Token=?', $dataSQL);
+		$token=$this->session->userdata('token');
+		if ( (isset($data['RoomNumber']) and $data['RoomNumber']!='') or (isset($data['Address']) and $data['Address']!='') ){
+			$this->db->query('Update Post set Step2="1" Where Token="'.$token.'"');
+		} else {
+			$this->db->query('Update Post set Step2="0" Where Token="'.$token.'"');
+		}
+	}
+
+	function updatePost31($data)
+	{
+		$Token=$this->session->userdata('token');
+		$this->db->query('Update Post set Step3="1" Where Token="'.$Token.'"');
+		//Insert This Line for Change TotalPrice to NetPrice
+		$this->db->query('Update Post Set TotalPrice=NetPrice Where Token="'.$Token.'"');
+		//Change PricePerSq
+		//$this->db->query('Update Post Set PricePerSq=TotalPrice/(useArea+terraceArea) Where Token="'.$Token.'"');
+		$this->db->query('Update Post Set PricePerSq=TotalPrice/(useArea) Where Token="'.$Token.'"');
+		//End Change TotalPrice to NetPrice
+	}
+
+	function updatePost32($data)
+	{
+		$Token=$this->session->userdata('token');
+		$this->db->query('update Post Set TotalPrice=DTotalPrice Where TOAdvertising="2" and Token="'.$Token.'"');
+		$this->db->query('Update Post Set PricePerSq=TotalPrice/(useArea) Where Token="'.$Token.'"');
+		$query=$this->db->query('Select * from Post Where Token="'.$Token.'"');
+		$row=$query->row();
+		if ($row->DProfitPrice!=null and $row->DReadyPayment!=null and $row->DNetPrice!=null){
+			$this->db->query('Update Post set Step3="1" Where Token="'.$Token.'"');
+		}
+	}
+
+	function updatePost33($data)
+	{
+
+	}
+
+	function updatePost34($data)
+	{
+
+	}
+
+	function updatePost35($data)
+	{
+		$Token=$this->session->userdata('token');
+		$this->db->query('Update Post set Step3="1" Where Token="'.$Token.'"');
+		$this->db->query('Update Post Set PricePerSq=PRentPrice/(useArea) Where Token="'.$Token.'"');
+	}
+
+	function updatePost4()
+	{
+		$POID=$this->getPOID();
+		$token=$this->session->userdata('token');
+		$query=$this->db->query('Select * from ImagePost Where POID="'.$POID.'"');
+		if ($query->num_rows() > 0){
+			$this->db->query('Update Post set Step4="1" Where Token="'.$token.'"');
+		} else {
+			$this->db->query('Update Post set Step4="0" Where Token="'.$token.'"');
+		}
+	}
+
+	function updatePost5()
+	{
+		$POID=$this->getPOID();
+		$token=$this->session->userdata('token');
+		$query=$this->db->query('Select Telephone1 from Post Where POID="'.$POID.'"');
+		if ($query->num_rows() > 0){
+				$row=$query->row();
+				$Tel=$row->Telephone1;
+				if ($Tel!=null and $Tel!=''){
+					$this->db->query('Update Post set Step5="1" Where Token="'.$token.'"');
+				} else {
+					$this->db->query('Update Post set Step5="0" Where Token="'.$token.'"');
+				}
+		}
+	}
+
+// tas add 23 Aug 15 ///
+	function getPOID(){
+		
+		$user_id=$this->session->userdata('user_id');
+		$Token=$this->session->userdata('token');
+		$query=$this->db->query('select POID from Post Where Token="'.$Token.'"');
+		
+		$row = $query->row();
+		return $row->POID;
+	}
+
+	function AdminGetPOID(){
+		//$user_id=$this->session->userdata('user_id');
+		$Token=$this->session->userdata('token');
+		$query=$this->db->query('select POID from Post Where Token="'.$Token.'"');
+		$row = $query->row();
+		return $row->POID;
+	}
+
+	function AdminGetUID(){
+		//$user_id=$this->session->userdata('user_id');
+		$Token=$this->session->userdata('token');
+		$query=$this->db->query('select user_id from Post Where Token="'.$Token.'"');
+		$row = $query->row();
+		return $row->user_id;
+	}
+
+	function insertImgPost($data,$path){
+			$cap = "";
+			//echo $path."... data POID : ".$data['postid'];
+			$row = $this->db->query('Insert into ImagePost set POID="'.$data['postid'].'", type="'.$data['type'].'",file="'.$path.'",description="'.$cap.'"');
+			//$this->db->error();
+			//echo $this->db->last_query(); 
+			return $this->db->insert_id();
+		
+	}
+	function update_description($d,$id){
+		$CheckOrder=strpos($d,'#');
+		if ($CheckOrder!==false){
+			$data=explode('#', $d);
+			$cdata=sizeof($data);
+			$Order=$data[$cdata-1];
+			$i=0;
+			$desc="";
+			while ($i<$cdata-1){
+				$desc=$desc.$data[$i];
+				$i++;
+			}
+			return $this->db->query('Update ImagePost set description="'.$desc.'", Order_Sort="'.$Order.'" Where ImgID="'.$id.'"');
+		} else {
+			return $this->db->query('Update ImagePost set description="'.$d.'" Where ImgID="'.$id.'"');	
+		}				
+	}
+
+	function update_allow($a,$id){
+		return $this->db->query('Update ImagePost set allow="'.$a.'" Where ImgID="'.$id.'"');
+	}
+	public function qImg($type,$poid){
+		
+		$this->db->query('SET NAMES utf8');
+        $this->db->query('SET character_set_results=utf8');
+        $query=$this->db->query('select * from ImagePost Where type="'.$type.'" and POID ="'.$poid.'" Order By ImgID');
+        return $query;
+	}
+	public function delImg($id){
+		$query = $this->db->query('Delete from ImagePost Where ImgID="'.$id.'"');
+		return $query;
+	}
+	
+	public function qImg_share($poid){
+		$project = $this->db->query('select ProjectName from Post where POID="'.$poid.'"');
+		$presult = $project->row();
+		//echo "p result :".$presult->ProjectName;
+		
+		$qPOID = $this->db->query('select POID from Post where ProjectName="'.$presult->ProjectName.'"');
+		
+		/*foreach($qPOID->result() as $row){
+			echo $row->POID;
+			
+			$rPOID
+		}*/
+		
+		//$rPOID = $qPOID->result_array();
+		return $qPOID;
+		
+		
+	}
+	public function qPID($poid){
+		
+		$qPID = $this->db->query('select PID from Post where POID="'.$poid.'"');
+		
+		$rPID = $qPID->row();
+		
+		$result = $rPID->PID;
+		return $result;
+	}
+	public function qProjectName($poid){
+		$project = $this->db->query('select PID from Post where POID="'.$poid.'"');
+		$rPID = $project->row();
+		$pid = $rPID->PID;
+		
+		$pname = $this->db->query('select PName_en from Project where PID="'.$pid.'"');
+		if ($pname->num_rows()!=0){
+			$pn = $pname->row();
+			$projName = $pn->PName_en;
+		} else {
+			$projName =" ";
+		}
+		
+		return $projName;
+	}
+	public function insertImgShare($file,$postid){
+			
+			$row = $this->db->query('Insert into ImagePost set POID="'.$postid.'", type="facilities",file="'.$file.'"');
+			
+			return $this->db->insert_id();
+		
+	}
+	public function delImgShare($file,$postid){
+			$row = $this->db->query('Delete from ImagePost Where POID="'.$postid.'" and file="'.$file.'"');
+			
+			return $row;
+	}
+	
+	function DelTmpPost()
+	{
+		$user_id=$this->session->userdata('user_id');
+		$this->db->query('insert into Post_backup Select * from Post Where user_id="'.$user_id.'" and (OwnerName is null or OwnerName="") and (ProjectName is null or ProjectName="") and Active=0');
+		$this->db->query('Delete from Post Where user_id="'.$user_id.'" and (OwnerName is null or OwnerName="") and (ProjectName is null or ProjectName="") and Active=0');
+		//$this->db->query('Update Post set Active="1" Where user_id="'.$user_id.'" and Step1=1 and Step2=1 and Step3=1 and Step4=1 and Step5=1');
+		//$this->db->query('Update Post set TotalPrice=DTotalPrice Where TOAdvertising=2 and TotalPrice is null');
+	}
+
+	function deactive($Token)
+	{
+		$this->db->query('Update Post set Active="0" Where Token="'.$Token.'"');
+	}
+
+	function excelData($filename,$filetype)
+	{
+		$file = './files/'.$filename;
+
+		//read file from path
+		$objPHPExcel = PHPExcel_IOFactory::load($file);
+
+		//get only the Cell Collection
+		$cell_collection = $objPHPExcel->getActiveSheet()->getCellCollection();
+		$objWorksheet = $objPHPExcel->setActiveSheetIndex(0);
+		$highestColumn = $objWorksheet->getHighestColumn();
+		$highestRow = $objWorksheet->getHighestRow();
+
+		$agreeowner=1;
+		$toproperty=1;//condomenium
+
+		//extract to a PHP readable array format
+		foreach ($cell_collection as $cell) {
+			$column = $objPHPExcel->getActiveSheet()->getCell($cell)->getColumn();
+			$row = $objPHPExcel->getActiveSheet()->getCell($cell)->getRow();
+			$data_value = $objPHPExcel->getActiveSheet()->getCell($cell)->getValue();
+
+			//header will/should be in row 1 only. of course this can be modified to suit your need.
+			if($row > 1){
+				$toowner[$i]=1;
+				if($filetype==1){//สำหรับให้เช่า
+					$toadvertising[$row]=5;
+					if($column=='B'){
+						$projectname[$row]=$data_value;
+						$query=$this->db->query('Select pid,lat,lng from Project Where pname_th="'.$data_value.'" ');
+						if($query->num_rows()>0){
+							$fetch=$query->row();
+							$projectid[$row]=$fetch->pid;
+							$projectlat[$row]=$fetch->lat;
+							$projectlong[$row]=$fetch->lng;
+						}else{
+							$projectid[$row]="";
+							$projectlat[$row]="";
+							$projectlong[$row]="";
+						}
+					}
+					if($column=='D'){
+						$ownername[$row]=$data_value;
+					}
+					if($column=='I'){
+						$roomnumber[$row]=$data_value;
+					}
+					if($column=='J'){
+						$address[$row]=$data_value;
+					}
+					if($column=='K'){
+						$floor[$row]=$data_value;
+					}
+					if($column=='L'){
+						if($data_value=='สตูดิโอ' or $data_value=='studio'){
+							$number=99;
+						}else{
+							$number=$data_value;
+						}
+						$bedroom[$row]=$number;
+					}
+					if($column=='M'){
+						$bathroom[$row]=$data_value;
+					}
+					if($column=='N'){
+						$direction[$row]=$data_value;
+					}
+					if($column=='O'){
+						$usearea[$row]=$data_value;
+					}
+					if($column=='P'){
+						$terracearea[$row]=$data_value;
+					}
+					if($column=='AN'){
+						if($data_value=='ว่าง'){
+							$status=0;
+						}else if($data_value=='มีผู้เช่า'){
+							$status=1;
+						}else{
+							$status=3;
+						}
+						$statusprent[$row]=$status;
+					}
+					if($column=='AM'){
+						$dateexpire[$row]=PHPExcel_Shared_Date::ExcelToPHPObject($data_value)->format('Y-m-d');
+					}
+					if($column=='AN'){
+						$prentprice[$row]=$data_value;
+					}
+					if($column=='BR'){
+						$telephone1[$row]=$data_value;
+					}
+					if($column=='BT'){
+						$telephone2[$row]=$data_value;
+					}
+					if($column=='BV'){
+						$email1[$row]=$data_value;
+					}
+					if($column=='BW'){
+						$email2[$row]=$data_value;
+					}
+
+				}else if($filetype==2){//สำหรับขายดาวน์
+					$statusprent=0;
+					if($column=='B'){
+						$toowner[$row]=$data_value;
+					}
+					if($column=='C'){
+						$ownername[$row]=$data_value;
+					}
+					if($column=='E'){
+						$projectname[$row]=$data_value;
+						$query=$this->db->query('Select pid,lat,lng from Project Where pname_th="'.$data_value.'" ');
+						if($query->num_rows()>0){
+							$fetch=$query->row();
+							$projectid[$row]=$fetch->pid;
+							$projectlat[$row]=$fetch->lat;
+							$projectlong[$row]=$fetch->lng;
+						}else{
+							$projectid[$row]="";
+							$projectlat[$row]="";
+							$projectlong[$row]="";
+						}
+					}
+					if($column=='F'){
+						$query=$this->db->query('Select toaid from TOAdvertising Where aname_th="'.$data_value.'" and active=1 ');
+						if($query->num_rows()>0){
+							$fetch=$query->row();
+							$adv_id=$fetch->toaid;
+						}else{
+							$adv_id=2;
+						}
+						$toadvertising[$row]=$adv_id;
+					}
+					if($column=='G'){
+						$tower[$row]=$data_value;
+					}
+					if($column=='H'){
+						$roomnumber[$row]=$data_value;
+					}
+					if($column=='I'){
+						$floor[$row]=$data_value;
+					}
+					if($column=='J'){
+						if($data_value=='สตูดิโอ' or $data_value=='studio'){
+							$number=99;
+						}else{
+							$number=extract_int($data_value);
+						}
+						$bedroom[$row]=$number;
+					}
+					if($column=='K'){
+						$bathroom[$row]=extract_int($data_value);
+					}
+					if($column=='L'){
+						$query=$this->db->query('Select did from Direction Where dname="'.$data_value.'" ');
+						if($query->num_rows()>0){
+							$fetch=$query->row();
+							$direct_id=$fetch->did;
+						}else{
+							$direct_id="";
+						}
+						$direction[$row]=$direct_id;
+					}
+					if($column=='M'){
+						$usearea[$row]=$data_value;
+					}
+					if($column=='N'){
+						$terracearea[$row]=$data_value;
+					}
+					if($column=='R'){
+						$area=explode(',',$data_value);
+						$spec_id="";
+						for($i=0;$i<count($area);$i++){
+							$query=$this->db->query('Select tocsid from TOCondoSpec Where csname_th="'.$area[$i].'" ');
+							if($query->num_rows()>0){
+								$fetch=$query->row();
+								$spec_id=$fetch->tocsid.",";
+							}
+						}
+						$condospec[$row]=$spec_id;
+					}
+					if($column=='S'){
+						$dnetprice[$row]=$data_value;
+						$dtotalprice[$row]=$data_value;
+						$dtransferpayment[$row]=$data_value;
+					}
+					if($column=='T'){
+						$agreepostday[$row]=extract_int($data_value);
+					}
+					if($column=='U'){
+						if($data_value=='ต้องการกำไร'){
+							$prefixdprofitprice[$row]=1;
+						}else if($data_value=='ยอมขาดทุน'){
+							$prefixdprofitprice[$row]=2;
+						}else{
+							$prefixdprofitprice[$row]=3;
+						}
+					}
+					if($column=='V'){
+						$dprofitprice[$row]=$data_value;
+					}
+					if($column=='W'){
+						$dchangecontractprice[$row]=$data_value;
+					}
+					if($column=='X'){
+						$dallpayment[$row]=$data_value;
+						$dtransferpayment[$row]=$dnetprice[$row]-$dallpayment[$row];
+					}
+					if($column=='Y'){
+						$dreadypayment[$row]=$data_value;
+					}
+					if($column=='Z'){
+						$dstalepayment[$row]=$data_value;
+					}
+					if($column=='AA'){
+						if($data_value=='ชำระตรงตามเวลา'){
+							$historydpayment[$row]=0;
+						}else if($data_value=='ค้างชำระ'){
+							$historydpayment[$row]=2;
+						}else{
+							$historydpayment[$row]=1;
+						}
+					}
+					if($column=='AB'){
+						$dstalepaymentmonth[$row]=$data_value;
+					}
+					if($column=='AK'){
+						$dfreefurniture[$row]=$data_value;
+					}
+					if($column=='AL'){
+						$dfreeetc[$row]=$data_value;
+					}
+					if($column=='AM'){
+						$dfreeelectric[$row]=$data_value;
+					}
+					if($column=='AN'){
+						$ddiscount[$row]=extract_int($data_value);
+					}
+					if($column=='AO'){
+						$dfreevoucher[$row]=str_replace(",","",$data_value);
+					}
+					if($column=='AQ'){
+						$telephone1[$row]=$data_value;
+					}
+					if($column=='AR'){
+						$email1[$row]=$data_value;
+					}
+					if($column=='AS'){
+						$lineid[$row]=$data_value;
+					}
+				}
+			}
+		}
+
+		$highestColumnIndex = PHPExcel_Cell::columnIndexFromString($column);
+
+		for($i=2;$i<=$highestRow;$i++){
+			if(!isset($toowner[$i])){
+				$toowner[$i]=1;
+			}
+			if(!isset($ownername[$i])){
+				$ownername[$i]="";
+			}
+			if(!isset($projectname[$i])){
+				$projectname[$i]="";
+			}
+			if(!isset($projectid[$i])){
+				$projectid[$i]="";
+			}
+			if(!isset($projectlat[$i])){
+				$projectlat[$i]="";
+			}
+			if(!isset($projectlong[$i])){
+				$projectlong[$i]="";
+			}
+			if(!isset($toadvertising[$i])){
+				$toadvertising[$i]="";
+			}
+			if(!isset($tower[$i])){
+				$tower[$i]="";
+			}
+			if(!isset($address[$i])){
+				$address[$i]="";
+			}
+			if(!isset($floor[$i])){
+				$floor[$i]="";
+			}
+			if(!isset($roomnumber[$i])){
+				$roomnumber[$i]="";
+			}
+			if(!isset($bedroom[$i])){
+				$bedroom[$i]="";
+			}
+			if(!isset($bathroom[$i])){
+				$bathroom[$i]="";
+			}
+			if(!isset($direction[$i])){
+				$direction[$i]="";
+			}
+			if(!isset($usearea[$i])){
+				$usearea[$i]="";
+			}
+			if(!isset($direction[$i])){
+				$direction[$i]="";
+			}
+			if(!isset($terracearea[$i])){
+				$terracearea[$i]="";
+			}
+			if(!isset($condospec[$i])){
+				$condospec[$i]="";
+			}
+			if(!isset($statusprent[$i])){
+				$statusprent[$i]=3;
+			}
+			if(!isset($prentprice[$i])){
+				$prentprice[$i]="";
+			}
+			if(!isset($dnetprice[$i])){
+				$dnetprice[$i]="";
+			}
+			if(!isset($dtotalprice[$i])){
+				$dtotalprice[$i]="";
+			}
+			if(!isset($agreepostday[$i])){
+				$agreepostday[$i]="";
+			}
+			if(!isset($prefixdprofitprice[$i])){
+				$prefixdprofitprice[$i]="";
+			}
+			if(!isset($dprofitprice[$i])){
+				$dprofitprice[$i]="";
+			}
+			if(!isset($dchangecontractprice[$i])){
+				$dchangecontractprice[$i]="";
+			}
+			if(!isset($dallpayment[$i])){
+				$dallpayment[$i]="";
+			}
+			if(!isset($dtransferpayment[$i])){
+				$dtransferpayment[$i]="";
+			}
+			if(!isset($dreadypayment[$i])){
+				$dreadypayment[$i]="";
+			}
+			if(!isset($dstalepayment[$i])){
+				$dstalepayment[$i]="";
+			}
+			if(!isset($historydpayment[$i])){
+				$historydpayment[$i]="";
+			}
+			if(!isset($dstalepaymentmonth[$i])){
+				$dstalepaymentmonth[$i]="";
+			}
+			if(!isset($dfreefurniture[$i])){
+				$dfreefurniture[$i]="";
+			}
+			if(!isset($dfreeetc[$i])){
+				$dfreeetc[$i]="";
+			}
+			if(!isset($dfreeelectric[$i])){
+				$dfreeelectric[$i]="";
+			}
+			if(!isset($ddiscount[$i])){
+				$ddiscount[$i]="";
+			}
+			if(!isset($dfreevoucher[$i])){
+				$dfreevoucher[$i]="";
+			}
+			if(!isset($telephone1[$i])){
+				$telephone1[$i]="";
+			}
+			if(!isset($telephone2[$i])){
+				$telephone2[$i]="";
+			}
+			if(!isset($email1[$i])){
+				$email1[$i]="";
+			}
+			if(!isset($email2[$i])){
+				$email2[$i]="";
+			}
+			if(!isset($dateexpire[$i])){
+				$dateexpire[$i]="";
+			}
+
+			$token="";
+			$query=$this->db->query('Select id from zmyhome.users Where email="'.$email1[$i].'" ');
+			if($query->num_rows()>0){
+				$fetch=$query->row();
+				$user_id=$fetch->id;
+				$token=time().$user_id;
+				$token=md5($token);
+			}
+
+			if($projectname[$i]!=''){
+				$query=$this->db->query('Select POID from Post Where projectname="'.$projectname[$i].'" and ownername="'.$ownername[$i].'" and address="'.$address[$i].'" and floor="'.$floor[$i].'" ');
+				if($query->num_rows()==0){
+					$this->db->query('Insert into Post set token="'.$token.'", user_id="'.$user_id.'", agree_owner="'.$agreeowner.'", toowner="'.$toowner[$i].'", ownername="'.$ownername[$i].'", toproperty="'.$toproperty.'", pid="'.$projectid[$i].'", projectname="'.$projectname[$i].'", lat="'.$projectlat[$i].'", lng="'.$projectlong[$i].'", toadvertising="'.$toadvertising[$i].'", tower="'.$tower[$i].'", roomnumber="'.$roomnumber[$i].'", address="'.$address[$i].'", floor="'.$floor[$i].'", bedroom="'.$bedroom[$i].'", bathroom="'.$bathroom[$i].'", direction="'.$direction[$i].'", usearea="'.$usearea[$i].'", terracearea="'.$terracearea[$i].'", statusprent="'.$statusprent[$i].'", prentprice="'.$prentprice[$i].'", dnetprice="'.$dnetprice[$i].'", dtotalprice="'.$dtotalprice[$i].'",agreepostday="'.$agreepostday[$i].'", prefixdprofitprice="'.$prefixdprofitprice[$i].'", dprofitprice="'.$dprofitprice[$i].'", dchangecontractprice="'.$dchangecontractprice[$i].'", dallpayment="'.$dallpayment[$i].'", dtransferpayment="'.$dtransferpayment[$i].'", dreadypayment="'.$dreadypayment[$i].'", dstalepayment="'.$dstalepayment[$i].'", dfreefurniture="'.$dfreefurniture[$i].'", dfreeetc="'.$dfreeetc[$i].'", dfreeelectric="'.$dfreeelectric[$i].'", ddiscount="'.$ddiscount[$i].'", dfreevoucher="'.$dfreevoucher[$i].'", telephone1="'.$telephone1[$i].'", telephone2="'.$telephone2[$i].'",  email1="'.$email1[$i].'", email2="'.$email2[$i].'", dateexpire="'.$dateexpire[$i].'" ');
+					$poid=$this->db->insert_id();
+				}else{
+					$fetch=$query->row();
+					$poid=$fetch->poid;
+					$this->db->query('Update Post set token="'.$token.'", user_id="'.$user_id.'", agree_owner="'.$agreeowner.'", toowner="'.$toowner[$i].'", ownername="'.$ownername[$i].'", toproperty="'.$toproperty.'", pid="'.$projectid[$i].'", projectname="'.$projectname[$i].'", lat="'.$projectlat[$i].'", lng="'.$projectlong[$i].'", toadvertising="'.$toadvertising[$i].'", tower="'.$tower[$i].'", roomnumber="'.$roomnumber[$i].'", address="'.$address[$i].'", floor="'.$floor[$i].'", bedroom="'.$bedroom[$i].'", bathroom="'.$bathroom[$i].'", direction="'.$direction[$i].'", usearea="'.$usearea[$i].'", terracearea="'.$terracearea[$i].'", statusprent="'.$statusprent[$i].'", prentprice="'.$prentprice[$i].'", dnetprice="'.$dnetprice[$i].'", dtotalprice="'.$dtotalprice[$i].'",agreepostday="'.$agreepostday[$i].'", prefixdprofitprice="'.$prefixdprofitprice[$i].'", dprofitprice="'.$dprofitprice[$i].'", dchangecontractprice="'.$dchangecontractprice[$i].'", dallpayment="'.$dallpayment[$i].'", dtransferpayment="'.$dtransferpayment[$i].'", dreadypayment="'.$dreadypayment[$i].'", dstalepayment="'.$dstalepayment[$i].'", dfreefurniture="'.$dfreefurniture[$i].'", dfreeetc="'.$dfreeetc[$i].'", dfreeelectric="'.$dfreeelectric[$i].'", ddiscount="'.$ddiscount[$i].'", dfreevoucher="'.$dfreevoucher[$i].'", telephone1="'.$telephone1[$i].'", telephone2="'.$telephone2[$i].'",  email1="'.$email1[$i].'", email2="'.$email2[$i].'", dateexpire="'.$dateexpire[$i].'" Where poid="'.$poid.'" ');
+					$row=$query->row();
+					$poid=$row->poid;
+				}
+
+				if($condospec[$i]<>''){
+					$spec_array=explode(',',$condospec[$i]);
+					for($s=0;$s<count($spec_array);$s++){
+						$query=$this->db->query('Select poid from PostCondoSpec2 Where poid="'.$poid.'" and tocsid="'.$spec_array[$s].'" ');
+						if($query->num_rows()==0 and $spec_array[$s]<>''){
+							$this->db->query('Insert into PostCondoSpec2 set poid="'.$poid.'", tocsid="'.$spec_array[$s].'" ');
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	function qProblem()
+	{
+        $this->db->query('SET NAMES utf8');
+        $this->db->query('SET character_set_results=utf8');
+        $query=$this->db->query('select id,name_th,name_en from cfg_master Where type="problem" and status=1 Order By sort_no');
+        return $query;
+	}
+	
+	function qActivePost()
+	{
+        $this->db->query('SET NAMES utf8');
+        $this->db->query('SET character_set_results=utf8');
+        $query=$this->db->query('select id,name_th,name_en from cfg_master Where type="active_post" and status=1 Order By sort_no');
+        return $query;
+	}
+	
+	function add_Helpdesk($data)
+	{
+		$poid=$data['poid'];
+		$problem_type=$data['problem_type'];
+		$informer_name=$data['informer_name'];
+		$informer_email=$data['informer_email'];
+		$informer_telphone=$data['informer_telphone'];
+		$informer_detail=$data['informer_detail'];
+		
+		$query=$this->db->query('Select hid from Helpdesk Where poid="'.$poid.'" and informer_email="'.$informer_email.'" ');
+		if($query->num_rows()==0){
+			$this->db->query('Insert into Helpdesk set poid="'.$poid.'", problem_type="'.$problem_type.'", informer_name="'.$informer_name.'", informer_email="'.$informer_email.'", informer_telphone="'.$informer_telphone.'", informer_detail="'.$informer_detail.'", informer_date=now() ');
+		}
+	}
+
+	function qLabel()
+	{
+        $this->db->query('SET NAMES utf8');
+        $this->db->query('SET character_set_results=utf8');
+        $query=$this->db->query('select id,name_th,name_en from cfg_master Where type="label_type" and status=1 Order By sort_no');
+        return $query;
+	}
+	
+	function qProject2(){
+        $this->db->query('SET NAMES utf8');
+        $this->db->query('SET character_set_results=utf8');
+        $query=$this->db->query('select * from Project Order By PName_th');
+		$result=array();
+		foreach ($query->result() as $row){
+			array_push($result,$row->PName_th);
+			array_push($result,$row->PName_en);
+		}
+        return $result;
+	}
+	
+	function ClearImgFail($POID){
+		$this->db->query('delete from ImagePost Where (type is null or type="") and POID="'.$POID.'"');
+	}
+}
+?>

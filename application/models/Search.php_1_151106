@@ -1,0 +1,785 @@
+<?php
+class Search extends CI_Model {
+ 
+    function __construct()
+     {
+         // Call the Model constructor
+         parent::__construct();
+     }
+
+	function getFirstPoint($namePoint,$TOAdvertising)
+	{
+		//$TOAdvertising => 1=>ขาย, 2=>ขายดาวน์, 3=>เช่า
+		$query=$this->db->query('Select Type, Lat, Lng, KeyID from KeyMarker Where KeyName="'.$namePoint.'"');
+		$row=$query->row();
+		$Type=$row->Type;
+		$KeyID=$row->KeyID;
+		$Lat=$row->Lat;
+		$Lng=$row->Lng;
+		$centerMap=array(
+			"CenterName" => $namePoint,
+			"Lat" => $Lat,
+			"Lng" => $Lng
+		);
+		$resultSearch=array();
+		array_push($resultSearch, $centerMap);
+		//Area Search
+		if ($Type=="Area"){
+			$queryArea=$this->db->query('Select PID, PName_th, Lat, Lng from Project Where Area="'.$namePoint.'"');
+			foreach ($queryArea->result() as $rowArea){
+				$PID=$rowArea->PID;
+				$ProjectName=$rowArea->PName_th;
+				$Lat=$rowArea->Lat;
+				$Lng=$rowArea->Lng;
+				if ($TOAdvertising=="1"){
+					$queryPost=$this->db->query('Select count(POID) as NumUnit, Min(TotalPrice) as MinPrice, Min(PricePerSq) as MinPricePerSq from Post Where Active=1 and PID="'.$PID.'" and  (TOAdvertising="1" or TOAdvertising="3")  group by PID');
+				}
+				if ($TOAdvertising=="1"){
+					$queryPost=$this->db->query('Select count(POID) as NumUnit, Min(DTotalPrice) as MinPrice, Min(PricePerSq) as MinPricePerSq from Post Where Active=1 and PID="'.$PID.'" and TOAdvertising="2" group by PID');
+				}
+				if ($TOAdvertising=="3"){
+					$queryPost=$this->db->query('Select count(POID) as NumUnit, Min(RRentPrice) as MinPrice, Min(PricePerSq) as MinPricePerSq from Post Where Active=1 and PID="'.$PID.'" and (TOAdvertising="3" or TOAdvertising="4") group by PID');
+				}
+				if ($queryPost->num_rows()>0){
+					$rowPost=$queryPost->row();
+					$NumUnit=$rowPost->NumUnit;
+					$MinPrice=$rowPost->MinPrice;
+					$MinPrice=number_format(($MinPrice/1000000), 1, '.', '')."M";
+					$MinPricePerSq=$rowPost->MinPricePerSq;
+					$MinPricePerSq=number_format(($MinPricePerSq/1000), 1, '.', '')."k";
+					$Point=array(
+						"PID" => $PID,
+						"ProjectName" => $ProjectName,
+						"Lat" => $Lat,
+						"Lng" => $Lng,
+						"NumUnit" => $NumUnit,
+						"MinPrice" => $MinPrice,
+						"MinPricePerSq" => $MinPricePerSq 
+					);
+					array_push($resultSearch,$Point);
+				}
+			}
+		}
+		//Province Search
+		if ($Type=="Province"){
+			$queryProvince=$this->db->query('Select PID, PName_th, Lat, Lng from Project Where Province="'.$namePoint.'"');
+			foreach ($queryProvince->result() as $rowProvince){
+				$PID=$rowProvince->PID;
+				$ProjectName=$rowProvince->PName_th;
+				$Lat=$rowProvince->Lat;
+				$Lng=$rowProvince->Lng;
+				if ($TOAdvertising=="1"){
+					$queryPost=$this->db->query('Select count(POID) as NumUnit, Min(TotalPrice) as MinPrice, Min(PricePerSq) as MinPricePerSq from Post Where Active=1 and PID="'.$PID.'" and  (TOAdvertising="1" or TOAdvertising="3")  group by PID');
+				}
+				if ($TOAdvertising=="2"){
+					$queryPost=$this->db->query('Select count(POID) as NumUnit, Min(DTotalPrice) as MinPrice, Min(PricePerSq) as MinPricePerSq from Post Where Active=1 and PID="'.$PID.'" and TOAdvertising="2" group by PID');
+				}
+				if ($TOAdvertising=="3"){
+					$queryPost=$this->db->query('Select count(POID) as NumUnit, Min(RRentPrice) as MinPrice, Min(PricePerSq) as MinPricePerSq from Post Where Active=1 and PID="'.$PID.'" and (TOAdvertising="3" or TOAdvertising="4") group by PID');
+				}
+				if ($queryPost->num_rows()>0){
+					$rowPost=$queryPost->row();
+					$NumUnit=$rowPost->NumUnit;
+					$MinPrice=$rowPost->MinPrice;
+					$MinPrice=number_format(($MinPrice/1000000), 1, '.', '')."M";
+					$MinPricePerSq=$rowPost->MinPricePerSq;
+					$MinPricePerSq=number_format(($MinPricePerSq/1000), 1, '.', '')."k";
+					$Point=array(
+						"PID" => $PID,
+						"ProjectName" => $ProjectName,
+						"Lat" => $Lat,
+						"Lng" => $Lng,
+						"NumUnit" => $NumUnit,
+						"MinPrice" => $MinPrice,
+						"MinPricePerSq" => $MinPricePerSq 
+					);
+					array_push($resultSearch,$Point);
+				}
+			}
+		}
+		//MRT or BTS
+		if ($Type=="BTS" or $Type=="MRT"){
+			//$queryBTSMRT=$this->db->query('Select PID from DistanceBTSMRT  Where '.$KeyID.'<1500');
+			$queryBTSMRT=$this->db->query('Select  PID from DistMarker Where Station="'.$KeyID.'" and Distance<=1500');
+			foreach($queryBTSMRT->result() as $rowBTSMRT)
+				$PID=$rowBTSMRT->PID;
+				$queryProject=$this->db->query('Select * from Project Where PID="'.$PID.'"');
+				$rowProject=$queryProject->row();
+				$ProjectName=$rowProject->PName_th;
+				$Lat=$rowProject->Lat;
+				$Lng=$rowProject->Lng;
+				if ($TOAdvertising=="1"){
+					$queryPost=$this->db->query('Select count(POID) as NumUnit, Min(TotalPrice) as MinPrice, Min(PricePerSq) as MinPricePerSq from Post Where Active=1 and PID="'.$PID.'" and  (TOAdvertising="1" or TOAdvertising="3")  group by PID');
+				}
+				if ($TOAdvertising=="2"){
+					$queryPost=$this->db->query('Select count(POID) as NumUnit, Min(DTotalPrice) as MinPrice, Min(PricePerSq) as MinPricePerSq from Post Where Active=1 and PID="'.$PID.'" and TOAdvertising="2" group by PID');
+				}
+				if ($TOAdvertising=="3"){
+					$queryPost=$this->db->query('Select count(POID) as NumUnit, Min(RRentPrice) as MinPrice, Min(PricePerSq) as MinPricePerSq from Post Where Active=1 and PID="'.$PID.'" and (TOAdvertising="3" or TOAdvertising="4") group by PID');
+				}
+				if ($queryPost->num_rows()>0){
+					$rowPost=$queryPost->row();
+					$NumUnit=$rowPost->NumUnit;
+					$MinPrice=$rowPost->MinPrice;
+					$MinPrice=number_format(($MinPrice/1000000), 1, '.', '')."M";
+					$MinPricePerSq=$rowPost->MinPricePerSq;
+					$MinPricePerSq=number_format(($MinPricePerSq/1000), 1, '.', '')."k";
+					$Point=array(
+						"PID" => $PID,
+						"ProjectName" => $ProjectName,
+						"Lat" => $Lat,
+						"Lng" => $Lng,
+						"NumUnit" => $NumUnit,
+						"MinPrice" => $MinPrice,
+						"MinPricePerSq" => $MinPricePerSq 
+					);
+					array_push($resultSearch,$Point);
+			}
+		}
+		//Project Name Search
+		if ($Type=="PID"){
+			$queryProject=$this->db->query('Select PID, PName_th, Lat, Lng from Project Where PName_th="'.$namePoint.'"');
+			foreach ($queryProject->result() as $rowArea){
+				$PID=$rowArea->PID;
+				$ProjectName=$rowArea->PName_th;
+				$Lat=$rowArea->Lat;
+				$Lng=$rowArea->Lng;
+				$queryPost=$this->db->query('Select count(POID) as NumUnit, Min(TotalPrice) as MinPrice, Min(PricePerSq) as MinPricePerSq from Post Where Active=1 and PID="'.$PID.'" group by PID');
+				if ($queryPost->num_rows()>0){
+					$rowPost=$queryPost->row();
+					$NumUnit=$rowPost->NumUnit;
+					$MinPrice=$rowPost->MinPrice;
+					$MinPrice=number_format(($MinPrice/1000000), 1, '.', '')."M";
+					$MinPricePerSq=$rowPost->MinPricePerSq;
+					$MinPricePerSq=number_format(($MinPricePerSq/1000), 1, '.', '')."k";
+					$Point=array(
+						"PID" => $PID,
+						"ProjectName" => $ProjectName,
+						"Lat" => $Lat,
+						"Lng" => $Lng,
+						"NumUnit" => $NumUnit,
+						"MinPrice" => $MinPrice,
+						"MinPricePerSq" => $MinPricePerSq 
+					);
+					array_push($resultSearch,$Point);
+				}
+			}			
+		}
+		echo json_encode($resultSearch);
+	}
+
+	function getPoint($distance,$namePoint,$TOProperty,$Bedroom,$Year,$TOAdvertising,$minPrice,$maxPrice)
+	{
+		//Year=>0 notCheck Year=>1<1 Year=>2<2 Year=3<3
+		if ($Year!=0){
+			$YC=$Year;
+			$YN=date("Y")+543;
+			$ChkYear=" and (".$YN."-YearEnd)<=".$YC." and (".$YN."-YearEnd)>-1"; 
+		} else {
+			$ChkYear="";
+		}
+		$query=$this->db->query('Select Type, Lat, Lng, KeyID from KeyMarker Where KeyName="'.$namePoint.'"');
+		if ($query->num_rows()!=0){
+			$row=$query->row();
+			$Type=$row->Type;
+			$KeyID=$row->KeyID;
+			$Lat=$row->Lat;
+			$Lng=$row->Lng;
+		} else {
+			$Type="Project";
+			$query=$this->db->query('Select * from Project Where PName_th="'.$namePoint.'"');
+			$row=$query->row();
+			$Lat=$row->Lat;
+			$Lng=$row->Lng;
+		}
+		$centerMap=array(
+			"CenterName" => $namePoint,
+			"Lat" => $Lat,
+			"Lng" => $Lng
+		);
+		$resultSearch=array();
+		array_push($resultSearch, $centerMap);
+		//Project Search
+		if ($Type=="Project"){
+			$queryArea=$this->db->query('Select * from Project Where PName_th="'.$namePoint.'"'.$ChkYear);
+			foreach ($queryArea->result() as $rowProject){
+				$PID=$rowProject->PID;
+				$ProjectName=$rowProject->PName_th;
+				$Lat=$rowProject->Lat;
+				$Lng=$rowProject->Lng;
+				$YearEnd=$rowProject->YearEnd;
+				$CondoUnit=$rowProject->CondoUnit;
+				$CarParkUnit=$rowProject->CarParkUnit;
+				$CamFee=$rowProject->CamFee;
+				$queryPost=$this->queryPost($Bedroom,$TOAdvertising,$PID,$minPrice,$maxPrice,$TOProperty);
+				if ($queryPost->num_rows()>0){
+					$rowPost=$queryPost->row();
+					$NumUnit=$rowPost->NumUnit;
+					$MinPrice=$rowPost->MinPrice;
+					$MinPricePerSq=$rowPost->MinPricePerSq;
+					if ($TOAdvertising=="3"){
+						$MinPrice=number_format(($MinPrice/1000), 1, '.', '')."k";
+						$MinPricePerSq="฿".number_format(($MinPricePerSq), 0, '.', '');
+					} else {
+						$MinPrice=number_format(($MinPrice/1000000), 1, '.', '')."M";
+						$MinPricePerSq=number_format(($MinPricePerSq/1000), 1, '.', '')."k";
+					};
+					
+					
+					$Point=array(
+						"PID" => $PID,
+						"ProjectName" => $ProjectName,
+						"Lat" => $Lat,
+						"Lng" => $Lng,
+						"NumUnit" => $NumUnit,
+						"MinPrice" => $MinPrice,
+						"MinPricePerSq" => $MinPricePerSq,
+						"YearEnd"=>$YearEnd,
+						"CondoUnit"=>$CondoUnit,
+						"CarParkUnit"=>$CarParkUnit,
+						"CamFee"=>$CamFee
+					);
+					array_push($resultSearch,$Point);
+				}
+			}
+		}
+		//Area Search
+		if ($Type=="Area"){
+			$queryArea=$this->db->query('Select * from Project Where Area="'.$namePoint.'"'.$ChkYear);
+			foreach ($queryArea->result() as $rowArea){
+				$PID=$rowArea->PID;
+				$ProjectName=$rowArea->PName_th;
+				$Lat=$rowArea->Lat;
+				$Lng=$rowArea->Lng;
+				$YearEnd=$rowArea->YearEnd;
+				$CondoUnit=$rowArea->CondoUnit;
+				$CarParkUnit=$rowArea->CarParkUnit;
+				$CamFee=$rowArea->CamFee;
+				$queryPost=$this->queryPost($Bedroom,$TOAdvertising,$PID,$minPrice,$maxPrice,$TOProperty);
+				if ($queryPost->num_rows()>0){
+					$rowPost=$queryPost->row();
+					$NumUnit=$rowPost->NumUnit;
+					$MinPrice=$rowPost->MinPrice;
+					$MinPricePerSq=$rowPost->MinPricePerSq;
+					if ($TOAdvertising=="3"){
+						$MinPrice=number_format(($MinPrice/1000), 1, '.', '')."k";
+						$MinPricePerSq="฿".number_format(($MinPricePerSq), 0, '.', '');
+					} else {
+						$MinPrice=number_format(($MinPrice/1000000), 1, '.', '')."M";
+						$MinPricePerSq=number_format(($MinPricePerSq/1000), 1, '.', '')."k";
+					};					
+					$Point=array(
+						"PID" => $PID,
+						"ProjectName" => $ProjectName,
+						"Lat" => $Lat,
+						"Lng" => $Lng,
+						"NumUnit" => $NumUnit,
+						"MinPrice" => $MinPrice,
+						"MinPricePerSq" => $MinPricePerSq,
+						"YearEnd"=>$YearEnd,
+						"CondoUnit"=>$CondoUnit,
+						"CarParkUnit"=>$CarParkUnit,
+						"CamFee"=>$CamFee
+					);
+					array_push($resultSearch,$Point);
+				}
+			}
+		}
+		//Province Search
+		if ($Type=="Province"){
+			$queryProvince=$this->db->query('Select * from Project Where Province="'.$namePoint.'"'.$ChkYear);
+			foreach ($queryProvince->result() as $rowProvince){
+				$PID=$rowProvince->PID;
+				$ProjectName=$rowProvince->PName_th;
+				$Lat=$rowProvince->Lat;
+				$Lng=$rowProvince->Lng;
+				$YearEnd=$rowProvince->YearEnd;
+				$CondoUnit=$rowProvince->CondoUnit;
+				$CarParkUnit=$rowProvince->CarParkUnit;
+				$CamFee=$rowProvince->CamFee;
+				$queryPost=$this->queryPost($Bedroom,$TOAdvertising,$PID,$minPrice,$maxPrice,$TOProperty);
+				if ($queryPost->num_rows()>0){
+					$rowPost=$queryPost->row();
+					$NumUnit=$rowPost->NumUnit;
+					$MinPrice=$rowPost->MinPrice;
+					$MinPricePerSq=$rowPost->MinPricePerSq;
+					if ($TOAdvertising=="3"){
+						$MinPrice=number_format(($MinPrice/1000), 1, '.', '')."k";
+						$MinPricePerSq="฿".number_format(($MinPricePerSq), 0, '.', '');
+					} else {
+						$MinPrice=number_format(($MinPrice/1000000), 1, '.', '')."M";
+						$MinPricePerSq=number_format(($MinPricePerSq/1000), 1, '.', '')."k";
+					};										
+					$Point=array(
+						"PID" => $PID,
+						"ProjectName" => $ProjectName,
+						"Lat" => $Lat,
+						"Lng" => $Lng,
+						"NumUnit" => $NumUnit,
+						"MinPrice" => $MinPrice,
+						"MinPricePerSq" => $MinPricePerSq,
+						"YearEnd"=>$YearEnd,
+						"CondoUnit"=>$CondoUnit,
+						"CarParkUnit"=>$CarParkUnit,
+						"CamFee"=>$CamFee
+					);
+					array_push($resultSearch,$Point);
+				}
+			}
+		}
+		//MRT or BTS
+		if ($Type=="BTS" or $Type=="MRT"){
+			if ($distance==0){
+				$distance="1500";
+			}
+			//$queryBTSMRT=$this->db->query('Select PID from DistanceBTSMRT  Where '.$KeyID.'<'.$distance);
+			$queryBTSMRT=$this->db->query('Select PID from DistMarker Where Station="'.$KeyID.'" and Distance<="'.$distance.'"');
+			foreach($queryBTSMRT->result() as $rowBTSMRT){
+				$PID=$rowBTSMRT->PID;
+				$queryProject=$this->db->query('Select * from Project Where PID="'.$PID.'"'.$ChkYear);
+				if ($queryProject->num_rows()>0){
+				$rowProject=$queryProject->row();
+				$ProjectName=$rowProject->PName_th;
+				$Lat=$rowProject->Lat;
+				$Lng=$rowProject->Lng;
+				$YearEnd=$rowProject->YearEnd;
+				$CondoUnit=$rowProject->CondoUnit;
+				$CarParkUnit=$rowProject->CarParkUnit;
+				$CamFee=$rowProject->CamFee;
+				$queryPost=$this->queryPost($Bedroom,$TOAdvertising,$PID,$minPrice,$maxPrice,$TOProperty);
+				if ($queryPost->num_rows()>0){
+					$rowPost=$queryPost->row();
+					$NumUnit=$rowPost->NumUnit;
+					$MinPrice=$rowPost->MinPrice;
+					$MinPricePerSq=$rowPost->MinPricePerSq;
+					if ($TOAdvertising=="3"){
+						$MinPrice=number_format(($MinPrice/1000), 1, '.', '')."k";
+						$MinPricePerSq="฿".number_format(($MinPricePerSq), 0, '.', '');
+					} else {
+						$MinPrice=number_format(($MinPrice/1000000), 1, '.', '')."M";
+						$MinPricePerSq=number_format(($MinPricePerSq/1000), 1, '.', '')."k";
+					};			
+					$Point=array(
+						"PID" => $PID,
+						"ProjectName" => $ProjectName,
+						"Lat" => $Lat,
+						"Lng" => $Lng,
+						"NumUnit" => $NumUnit,
+						"MinPrice" => $MinPrice,
+						"MinPricePerSq" => $MinPricePerSq,
+						"YearEnd"=>$YearEnd,
+						"CondoUnit"=>$CondoUnit,
+						"CarParkUnit"=>$CarParkUnit,
+						"CamFee"=>$CamFee
+					);
+					array_push($resultSearch,$Point);
+				}
+			}
+			}
+		}
+		if ($Type=="PID"){
+			$queryProject=$this->db->query('Select * from Project Where PName_th="'.$namePoint.'"'.$ChkYear);
+			foreach ($queryProject->result() as $rowArea){
+				$PID=$rowArea->PID;
+				$ProjectName=$rowArea->PName_th;
+				$Lat=$rowArea->Lat;
+				$Lng=$rowArea->Lng;
+				$YearEnd=$rowArea->YearEnd;
+				$CondoUnit=$rowArea->CondoUnit;
+				$CarParkUnit=$rowArea->CarParkUnit;
+				$CamFee=$rowArea->CamFee;
+				$queryPost=$this->queryPost($Bedroom,$TOAdvertising,$PID,$minPrice,$maxPrice,$TOProperty);
+				if ($queryPost->num_rows()>0){
+					$rowPost=$queryPost->row();
+					$NumUnit=$rowPost->NumUnit;
+					$MinPrice=$rowPost->MinPrice;
+					$MinPricePerSq=$rowPost->MinPricePerSq;
+					if ($TOAdvertising=="3"){
+						$MinPrice=number_format(($MinPrice/1000), 1, '.', '')."k";
+						$MinPricePerSq="฿".number_format(($MinPricePerSq), 0, '.', '');
+					} else {
+						$MinPrice=number_format(($MinPrice/1000000), 1, '.', '')."M";
+						$MinPricePerSq=number_format(($MinPricePerSq/1000), 1, '.', '')."k";
+					};				
+					$Point=array(
+						"PID" => $PID,
+						"ProjectName" => $ProjectName,
+						"Lat" => $Lat,
+						"Lng" => $Lng,
+						"NumUnit" => $NumUnit,
+						"MinPrice" => $MinPrice,
+						"MinPricePerSq" => $MinPricePerSq,
+						"YearEnd"=>$YearEnd,
+						"CondoUnit"=>$CondoUnit,
+						"CarParkUnit"=>$CarParkUnit,
+						"CamFee"=>$CamFee
+					);
+					array_push($resultSearch,$Point);
+				}
+			}			
+		}
+		echo json_encode($resultSearch);
+
+	}
+
+	function queryPost($Bedroom,$TOAdvertising,$PID,$minPrice,$maxPrice,$TOProperty){
+				if ($Bedroom!=0){
+					$pBedroom=' and Bedroom="'.$Bedroom.'"';
+				} else {
+					$pBedroom="";
+				}
+				if ($TOAdvertising=="1"){
+					if ($minPrice!=""){
+						$pminPrice=' and TotalPrice>="'.$minPrice.'"';
+					} else {
+						$pminPrice='';
+					};
+					if ($maxPrice!=""){
+						$pmaxPrice=' and TotalPrice<="'.$maxPrice.'"';
+					} else {
+						$pmaxPrice='';
+					};
+					$queryPost=$this->db->query('Select count(POID) as NumUnit, Min(TotalPrice) as MinPrice, Min(PricePerSq) as MinPricePerSq from Post Where Active=1 and PID="'.$PID.'" and  (TOAdvertising="1" or TOAdvertising="3" or TOAdvertising="4") and TOProperty="'.$TOProperty.'" '.$pBedroom.$pminPrice.$pmaxPrice.' group by PID');
+				}
+				if ($TOAdvertising=="2"){
+					if ($minPrice!=""){
+						$pminPrice=' and DTotalPrice>="'.$minPrice.'"';
+					} else {
+						$pminPrice='';
+					};
+					if ($maxPrice!=""){
+						$pmaxPrice=' and DTotalPrice<="'.$maxPrice.'"';
+					} else {
+						$pmaxPrice='';
+					};
+					$queryPost=$this->db->query('Select count(POID) as NumUnit, Min(DTotalPrice) as MinPrice, Min(PricePerSq) as MinPricePerSq from Post Where Active=1 and PID="'.$PID.'" and TOAdvertising="2" and TOProperty="'.$TOProperty.'" '.$pBedroom.$pminPrice.$pmaxPrice.' group by PID');
+				}
+				if ($TOAdvertising=="3"){
+					if ($minPrice!=""){
+						$pminPrice=' and PRentPrice>="'.$minPrice.'"';
+					} else {
+						$pminPrice='';
+					};
+					if ($maxPrice!=""){
+						$pmaxPrice=' and PRentPrice<="'.$maxPrice.'"';
+					} else {
+						$pmaxPrice='';
+					};
+					$queryPost=$this->db->query('Select count(POID) as NumUnit, Min(PRentPrice) as MinPrice, Min(PricePerSq) as MinPricePerSq from Post Where Active=1 and PID="'.$PID.'" and (TOAdvertising="4" or TOAdvertising="5")  and TOProperty="'.$TOProperty.'" '.$pBedroom.$pminPrice.$pmaxPrice.' group by PID');
+				}
+				//ขาย+ขายดาวน์
+				if ($TOAdvertising=="4"){
+					if ($minPrice!=""){
+						$pminPrice=' and (TotalPrice>="'.$minPrice.'" or DTotalPrice>="'.$minPrice.'")';
+					} else {
+						$pminPrice='';
+					};
+					if ($maxPrice!=""){
+						$pmaxPrice=' and (TotalPrice<="'.$maxPrice.'" or DTotalPrice<='.$maxPrice.'")"';
+					} else {
+						$pmaxPrice='';
+					};
+					//$this->db->query('update Post Set TotalPrice=DTotalPrice Where TOAdvertising="2" and (TotalPrice=0 or TotalPrice is null)');
+					$queryPost=$this->db->query('Select count(POID) as NumUnit, Min(TotalPrice) as MinPrice, Min(PricePerSq) as MinPricePerSq from Post Where Active=1 and PID="'.$PID.'" and (TOAdvertising="1" or TOAdvertising="2" or TOAdvertising="3" or TOAdvertising="4")  and TOProperty="'.$TOProperty.'" '.$pBedroom.$pminPrice.$pmaxPrice.' group by PID');
+				}				
+
+			return $queryPost;
+	}
+	
+	function queryPost2($Bedroom,$TOAdvertising,$PID,$minPrice,$maxPrice,$TOProperty){
+				if ($Bedroom!=0){
+					$pBedroom=' and Bedroom="'.$Bedroom.'"';
+				} else {
+					$pBedroom="";
+				}
+				if ($TOAdvertising=="1"){
+					if ($minPrice!=""){
+						$pminPrice=' and TotalPrice>="'.$minPrice.'"';
+					} else {
+						$pminPrice='';
+					};
+					if ($maxPrice!=""){
+						$pmaxPrice=' and TotalPrice<="'.$maxPrice.'"';
+					} else {
+						$pmaxPrice='';
+					};
+					$queryPost=$this->db->query('Select *, TotalPrice as Price, DATEDIFF(CURDATE(), DateCreate) as DateShow from Post Where Active=1 and PID="'.$PID.'" and  (TOAdvertising="1" or TOAdvertising="3") and TOProperty="'.$TOProperty.'" '.$pBedroom.$pminPrice.$pmaxPrice.' order by Price');
+				}
+				if ($TOAdvertising=="2"){
+					if ($minPrice!=""){
+						$pminPrice=' and DTotalPrice>="'.$minPrice.'"';
+					} else {
+						$pminPrice='';
+					};
+					if ($maxPrice!=""){
+						$pmaxPrice=' and DTotalPrice<="'.$maxPrice.'"';
+					} else {
+						$pmaxPrice='';
+					};
+					$queryPost=$this->db->query('Select *, DTotalPrice as Price, DATEDIFF(CURDATE(), DateCreate) as DateShow from Post Where Active=1 and PID="'.$PID.'" and TOAdvertising="2" and TOProperty="'.$TOProperty.'" '.$pBedroom.$pminPrice.$pmaxPrice.' order by Price');
+					//echo 'Select *, DTotalPrice as Price, DATE(DateCreate) as DateStart, CURDATE() as DateToday from Post Where Active=1 and PID="'.$PID.'" and TOAdvertising="2" and TOProperty="'.$TOProperty.'" '.$pBedroom.$pminPrice.$pmaxPrice;
+				}
+				if ($TOAdvertising=="3"){
+					if ($minPrice!=""){
+						$pminPrice=' and PRentPrice>="'.$minPrice.'"';
+					} else {
+						$pminPrice='';
+					};
+					if ($maxPrice!=""){
+						$pmaxPrice=' and PRentPrice<="'.$maxPrice.'"';
+					} else {
+						$pmaxPrice='';
+					};
+					$queryPost=$this->db->query('Select *, PRentPrice as Price, DATEDIFF(CURDATE(), DateCreate) as DateShow from Post Where Active=1 and PID="'.$PID.'" and (TOAdvertising="4" or TOAdvertising="5")  and TOProperty="'.$TOProperty.'" '.$pBedroom.$pminPrice.$pmaxPrice.' order by Price');
+				}
+				if ($TOAdvertising=="4"){
+					if ($minPrice!=""){
+						$pminPrice=' and (TotalPrice>="'.$minPrice.'" or DTotalPrice>="'.$minPrice.'")';
+					} else {
+						$pminPrice='';
+					};
+					if ($maxPrice!=""){
+						$pmaxPrice=' and (TotalPrice<="'.$maxPrice.'" or DTotalPrice<='.$maxPrice.'")"';
+					} else {
+						$pmaxPrice='';
+					};
+					//$this->db->query('update Post Set TotalPrice=DTotalPrice Where TOAdvertising="2" and (TotalPrice=0 or TotalPrice is null)');
+					$queryPost=$this->db->query('Select *, TotalPrice as Price, DATEDIFF(CURDATE(), DateCreate) as DateShow from Post Where Active=1 and PID="'.$PID.'" and (TOAdvertising="1" or TOAdvertising="2" or TOAdvertising="3" or TOAdvertising="4")  and TOProperty="'.$TOProperty.'" '.$pBedroom.$pminPrice.$pmaxPrice.' order by Price');
+				}
+			return $queryPost;
+	}
+
+	function getPostFromPoint($PID,$TOProperty,$Bedroom,$Year,$TOAdvertising,$minPrice,$maxPrice){
+		$queryPID=$this->queryPost2($Bedroom,$TOAdvertising,$PID,$minPrice,$maxPrice,$TOProperty);
+		$arrayPID=array();
+		foreach ($queryPID->result() as $rowPOID){
+			$POID=$rowPOID->POID;
+			$ProjectName=$rowPOID->ProjectName;
+			$Price=$rowPOID->Price;
+			$useArea=$rowPOID->useArea;
+			$useArea=$useArea+($rowPOID->terraceArea);
+			$PricePerSq=$Price/$useArea;
+					if ($TOAdvertising=="3"){
+						$Price=number_format(($Price), 0, '', ',');
+					} else {
+						$Price=number_format(($Price/1000000), 2, '.', '')."M";
+					};
+			$PricePerSq=number_format($PricePerSq, 0,'',',');
+			$Bedroom=$rowPOID->Bedroom;
+			if ($Bedroom=="99")
+			{
+				$Bedroom="สตูดิโอ";
+			}
+			$Floor=$rowPOID->Floor;
+			$DateShow=$rowPOID->DateShow;
+			if ($rowPOID->RedPost==1){
+				$Tel=$rowPOID->Telephone1;
+			} else {
+				$Tel="โทรหาทันที";
+			}
+			$queryLog=$this->db->query('Select Count(ViewTelByUserID) as ViewTel from LogViewPost Where POID="'.$POID.'"');
+			if ($queryLog->num_rows()>0){
+				$rowLog=$queryLog->row();
+				$ViewTel=$rowLog->ViewTel;
+			} else {
+				$ViewTel=0;
+			}
+			$queryPic=$this->db->query('Select file from ImagePost Where POID="'.$POID.'"');
+			$arrayPIC=array();
+			if ($queryPic->num_rows()>0){
+				foreach ($queryPic->result() as $rowPic){
+					array_push($arrayPIC,$rowPic->file);
+				}
+			};
+			$arrayPOID=array(
+				"POID"=>$POID,
+				"ProjectName"=>$ProjectName,
+				"Price"=>$Price,
+				"PricePerSq"=>$PricePerSq,
+				"Bedroom"=>$Bedroom,
+				"useArea"=>$useArea,
+				"Floor"=>$Floor,
+				"DateShow"=>$DateShow,
+				"ViewTel"=>$ViewTel,
+				"Tel"=>$Tel,
+				"Picture"=>$arrayPIC
+			);
+			array_push($arrayPID,$arrayPOID);
+		}
+		echo  json_encode($arrayPID);
+	}
+
+	function getUnitFromPOID($POID){
+		$queryUnit=$this->db->query('Select *, DATEDIFF(CURDATE(), DateCreate) as DateShow from Post Where POID="'.$POID.'"');
+		return $queryUnit;
+	}
+
+	function selectCountingList($POID,$PID){
+		$queryPost=$this->db->query('Select Count(POID) as AllList from Post Where Active=1 and PID="'.$PID.'"');
+		$rowPost=$queryPost->row();
+		$AllList=$rowPost->AllList;
+		$queryPost=$this->db->query('Select count(POID) ListNumber from Post Where Active=1 and PID="'.$PID.'" and POID<="'.$POID.'"');
+		$rowPost=$queryPost->row();	
+		$ListNumber=$rowPost->ListNumber;
+		$result=array($ListNumber,$AllList);
+		return $result;
+	}
+
+	function ContViewList($POID){
+		$queryLog=$this->db->query('Select Count(ID) as NumberView from LogViewPost Where POID="'.$POID.'" and ViewTelByUserID is not null');
+		if ($queryLog->num_rows() > 0){
+			$rowLog=$queryLog->row();
+			$result=$rowLog->NumberView;
+		} else {
+			$result=0;
+		}
+		return $result;
+	}
+
+	function CountSoldPerMonth($PID){
+		$queryPost=$this->db->query('Select Count(POID) as NumberSell from Post Where Active=0 and Status=3 and PID="'.$PID.'"');
+		if ($queryPost->num_rows() > 0){
+			$rowPost=$queryPost->row();
+			$NumberSell=$rowPost->NumberSell;
+		} else {
+			$NumberSell=0;
+		}
+		$queryPost=$this->db->query('Select DATEDIFF(Min(DateCreate), Max(DateCreate)) as DaySell from Post Where Active=0 and Status=3 and PID="'.$PID.'"');
+		if ($queryPost->num_rows() > 0){
+			$rowPost=$queryPost->row();
+			$DaySell=$rowPost->DaySell;
+			echo $DaySell;
+			$DaySell=$DaySell/30;
+		} else {
+			$result=0;
+		}
+		if ($DaySell!=0){
+			$resultNumber=$NumberSell/$DaySell;
+			$result=number_format($resultNumber, 0,'',',');
+		} else {
+			$result=0;
+		}
+		return $result;
+	}
+
+	function SelectImgFromPOID($POID){
+		$queryImg=$this->db->query('Select file from ImagePost Where POID="'.$POID.'"');
+		$result=array();
+		foreach ($queryImg->result() as $rowImg){
+			$file=$rowImg->file;
+			array_push($result,$file);
+		}
+		return $result;
+	}
+
+	function DistMRTBTS($PID){
+		$queryDistMarker=$this->db->query('Select Distance, Station, Type from DistMarker Where PID="'.$PID.'" and (Type="BTS" or Type="MRT" or Type="BRT" or Type="ARL") and Distance<1500 order by Distance limit 3');
+		//echo 'Select Distance, Station, Type from DistMarker Where PID="'.$PID.'" and (Type="BTS" or Type="MRT" or Type="BRT" or Type="ARL") order by Distance limit 3';
+		//echo 'Select Distance, Station, Type from DistMarker Where PID="'.$PID.'" and (Type="BTS" or Type="MRT" or Type="BRT" or Type="ARL") order by Distance limit 3';
+		//$rowDistMarker=$queryDistMarker->row();
+		$result=array();
+		foreach ($queryDistMarker->result() as $rowDistMarker){ 
+			$Distance=$rowDistMarker->Distance;
+			$Distance=$Distance/1000;
+			$Distance=number_format($Distance, 2,'.',',');
+			$KeyID=$rowDistMarker->Station;
+			$Type=$rowDistMarker->Type;
+			$queryKeyMarker=$this->db->query('Select KeyName from KeyMarker Where KeyID="'.$KeyID.'"');
+			$rowKeyMarker=$queryKeyMarker->row();
+			array_push($result, $Distance,$Type,$rowKeyMarker->KeyName);
+		}
+		return $result;
+	}
+
+	function DistFromType($PID,$Type){
+		if ($Type=="Minimart"){
+			$DistLimit=500;
+		} else {
+			$DistLimit=3000;
+		};
+		$queryDistMarker=$this->db->query('Select Distance, Station, Type from DistMarker Where PID="'.$PID.'" and Type="'.$Type.'" and Distance<"'.$DistLimit.'"  order by Distance limit 3');
+		//echo 'Select Distance, Station, Type from DistMarker Where PID="'.$PID.'" and Type="'.$Type.'" and Distance<"'.$DistLimit.'"  order by Distance limit 3';
+		$result=array();
+		foreach ($queryDistMarker->result() as $rowDistMarker){ 
+			$Distance=$rowDistMarker->Distance;
+			$Distance=$Distance/1000;
+			$Distance=number_format($Distance, 2,'.',',');
+			$KeyID=$rowDistMarker->Station;
+			$Type=$rowDistMarker->Type;
+			$queryKeyMarker=$this->db->query('Select KeyName from KeyMarker Where KeyID="'.$KeyID.'"');
+			$rowKeyMarker=$queryKeyMarker->row();
+			array_push($result, $Distance,$Type,$rowKeyMarker->KeyName);
+		}
+		return $result;
+	}
+
+	function getCondoSpec($POID,$GCSID){
+		$queryTOCondoSpec=$this->db->query('Select * from TOCondoSpec Where GCSID="'.$GCSID.'"');
+		$result=array();
+		foreach ($queryTOCondoSpec->result() as $rowCondoSpec){
+			$TOCSID=$rowCondoSpec->TOCSID;
+			$queryPostCondoSpec=$this->db->query('Select * from PostCondoSpec Where TOCSID="'.$TOCSID.'" and POID="'.$POID.'"');
+			if ($queryPostCondoSpec->num_rows()==1){
+				array_push($result,$rowCondoSpec->CSName_th);
+			}
+		}
+		return $result;
+	}
+
+	function getPostDCondo($POID,$Type){
+		$queryPostDCondo=$this->db->query('Select * from PostDCondo Where POID="'.$POID.'" and HistoryDPayment="'.$Type.'" Order By DPaymentTime');
+		return $queryPostDCondo;
+	}
+
+	function KeyDirection($DID){
+		if ($DID=="0"){
+			$result="--";
+		} else {
+			$query=$this->db->query('Select DNameEn from Direction Where DID="'.$DID.'"');
+			$row=$query->row();
+			$result=$row->DNameEn;
+		}
+		return $result;
+	}
+
+	function updateViewPost($POID){
+		$date=date("Y-m-d H:i:s");
+		if ($this->tank_auth->is_logged_in()){
+			$user_id=$this->session->userdata('user_id');
+		} else {
+			$user_id=$this->input->ip_address();
+		};
+		$query=$this->db->query('Select ID from LogViewPost Where ViewByUserID="'.$user_id.'" and POID="'.$POID.'"');
+		if ($query->num_rows()==0){
+			$this->db->query('Insert into LogViewPost set ViewByUserID="'.$user_id.'" , POID="'.$POID.'", LastUpdate="'.$date.'"');
+		}
+	}
+
+	function checkTypeAdvertising($POID)
+	{
+		$query=$this->db->query('Select TOAdvertising from Post Where POID="'.$POID.'"');
+		$row=$query->row();
+		return $row->TOAdvertising;
+	}
+
+	function qMarker()
+	 {
+        $this->db->query('SET NAMES utf8');
+        $this->db->query('SET character_set_results=utf8');
+        //$query=$this->db->query('select PName_th from Project Order By PName_th');
+		$query=$this->db->query('Select ProjectName from Post Where Active="1" Group By ProjectName');
+		$result=array();
+		foreach ($query->result() as $row){
+			//array_push($result,$row->PName_th);
+			array_push($result,$row->ProjectName);
+		}
+        //$query=$this->db->query('select KeyName from KeyMarker Where Type!="Minimart"');
+		$query=$this->db->query('select KeyName from KeyMarker Where Type="BTS" or Type="ARL" or Type="MRT"');
+		foreach ($query->result() as $row){
+			array_push($result,$row->KeyName);
+		}		
+        return $result;
+	 }
+
+
+}

@@ -1,0 +1,446 @@
+<?php
+$POID=$rowUnit->POID;
+$PID=$rowUnit->PID;
+$PName_th=$rowUnit->ProjectName;
+$TOAdvertising=$rowUnit->TOAdvertising;
+$Active=$rowUnit->Active;
+$queryAllPost=$this->unitdetail->getAllPostFromPIDandTOAdvertising($PID,$TOAdvertising,$Active,$PName_th);
+
+$DistEducation=$this->search->DistFromType2($PID,"Education");
+$DistHospital=$this->search->DistFromType2($PID,"Hospital");
+$DistShopingMall=$this->search->DistFromType2($PID,"ShopingMall");
+$DistExpressway=$this->search->DistFromType2($PID,"Expressway");
+$DistMinimart=$this->search->DistFromType2($PID,"Minimart");
+$unitStatusTxt="";
+if ($rowUnit->TOAdvertising==1){
+	$TotalPrice=$rowUnit->TotalPrice;
+	if($rowUnit->Active==82){
+		$unitStatusTxt="ขายแล้ว";
+	}
+}
+if ($rowUnit->TOAdvertising==2){
+	$TotalPrice=$rowUnit->DTotalPrice;
+	if($rowUnit->Active==82){
+		$unitStatusTxt="ขายดาวน์แล้ว";
+	}
+}
+if ($rowUnit->TOAdvertising==5){
+	$TotalPrice=$rowUnit->PRentPrice;
+	if($rowUnit->Active==82){
+		$unitStatusTxt="มีผู้เช่าแล้ว";
+	}
+}
+$TotalPrice2=$TotalPrice;
+$TotalPrice=number_format($TotalPrice, 0,'',',');
+$useArea=$rowUnit->useArea;
+$terraceArea=$rowUnit->terraceArea;
+//$sumArea=$useArea+$terraceArea;
+$sumArea=$useArea;
+?>
+		<div class="col-md-12 padding-top1">
+		  
+			<div class="bg-grey2"><!--new grey bg-->
+
+				<div class="bg-grey2 col-md-6 col-md-offset-1 resize-mobile">
+					<br>
+					<h5 class="text-primary text-center">เปรียบเทียบราคาคอนโด<?=$PName_th;?></h5>
+					<div class="table-responsive">
+						<table class="table borderless">
+						<tr class="text-primary">
+						  <td class="text-center">&nbsp;</td>
+						  <td class="text-center">ราคาปัจจุบัน</td>
+						  <td class="text-center">ราคาเดิม</td>
+						</tr>
+					  </table>
+					  <table class="table borderless">
+						<tr class="text-primary">
+							<td>ตึก</td>
+							<td>ชั้น</td>
+							<td>ทิศ</td>
+							<td>ตร.ม.</td>
+							<td>บาท/ม2.</td>
+							<td>+/-</td>
+							<td><img src="/img/sun-icon5.png"></a></td>
+							<td><a href="#"><span class="glyphicon glyphicon-earphone text-primary fix-glyphicon"></a></td>
+							<td>บาท/ม2.</td>
+							<td>+/-</td>
+							<td><img src="/img/sun-icon5.png"></a></td>
+							<td><span class="glyphicon glyphicon-earphone text-primary fix-glyphicon"></td>
+						</tr>
+						<?php
+							foreach ($queryAllPost->result() as $rowAllPost){
+						?>
+							<tr onmouseover="this.style.cursor='pointer';this.style.backgroundColor='#ffff97';" onmouseout="this.style.backgroundColor='';"
+							<?php
+								if (($rowAllPost->POID)==$POID){
+							?>
+								class="row-active-green"
+							<?php
+								} else {
+							?>
+								class="text-grey" onclick="showUnit('<?=base_url('zhome/unitdetail2')."/".$rowAllPost->POID;?>')"
+							<?php
+								}
+							?>
+							>
+								<td><?=$rowAllPost->Tower;?></td>
+								<td><?=$rowAllPost->Floor;?></td>
+								<td><?php
+									if (($rowUnit->Direction)!=0){
+										echo $this->unitdetail->convertDirection($rowAllPost->Direction);
+									} else {
+										echo "ไม่ระบุ";
+									}
+									?>
+								</td>								
+								<td><?=number_format($rowAllPost->useArea, 0,'',',');?></td>
+								<?php
+									$TrackPrice=$this->unitdetail->TrackPricePOID($rowAllPost->POID);
+								?>
+								<?php
+								 if ($TrackPrice[0]==0){
+								?>
+								<td><?=number_format(($rowAllPost->PricePerSq), 0,'',',');?></td>
+								<td><p class="text-green">&nbsp;</p></td>
+								<td><?=$rowAllPost->DateShow;?></td>
+								<td><?=$this->search->ContViewList($rowAllPost->POID);?></td>
+								<?php
+								 } else {
+								?>
+								<td><?=number_format($TrackPrice[1],0,'',',');?></td>
+								<td><p class="text-green"><?=$TrackPrice[2];?></p></td>
+								<td><?=$TrackPrice[3];?></td>
+								<td><?=$TrackPrice[4];?></td>
+								<?php
+								 }
+								?>
+								<?php
+								  if ($TrackPrice[0]>1)
+								  {
+								 ?>
+								<td><?=number_format($TrackPrice[5],0,'',',');?></td>
+								<td><p class="text-green"><?php if ($TrackPrice[6]==""){echo "-";}else{echo $TrackPrice[6];};?></p></td>
+								<td><?=$TrackPrice[7];?></td>
+								<td><?=$TrackPrice[8];?></td>
+								 <?php 	
+								  } else {
+								 ?>
+								<td>&nbsp;</td>
+								<td><p class="text-red">&nbsp;</p></td>
+								<td>&nbsp;</td>
+								<td>&nbsp;</td>
+								 <?php
+								  }
+								 ?>
+							</tr>
+						<?php
+							};
+						?>
+						</table>
+					</div>
+				</div>
+				<div class="clearfix"></div>
+				<br>
+			</div>
+
+			<!--end new grey bg-->
+
+			<div class="clearfix"></div>
+			<br>
+		   
+			<div class="text-center text-primary col-md-7 col-md-offset-1 resize-mobile "> 
+				<h5 class="text-primary text-center">คอนโด<?=$PName_th;?></h5>
+			</div>
+			<div class="clearfix"></div>
+			<br>
+			<!-- row5 -->
+			<div class="col-md-7 col-md-offset-1 text-grey">
+				<div class="col-md-4 col-xs-4">
+					<span class="pull-left">สร้างเสร็จ&nbsp;</span>
+					<?php 
+					if ($project!=null){
+					?>
+						<span class="pull-right"><?=$rowProject->YearEnd;?></span>
+					<?php 
+					} else {
+					?>
+						<span class="pull-right">ไม่มีข้อมูล</span>
+					<?php
+					}
+					?>
+				</div>
+				<div class="col-md-4 col-xs-4 border-left">
+					<span class="pull-left">ที่จอดรถ</span>
+					<?php 
+					if ($project!=null){
+					?>
+						<span class="pull-right"><?=$rowProject->CarParkUnit;?> คัน</span>
+					<?php 
+					} else {
+					?>
+						<span class="pull-right">ไม่มีข้อมูล</span>
+					<?php
+					}
+					?>
+			   </div>
+			   <div class="col-md-4 col-xs-4 border-left">
+					<span class="pull-left">ค่าส่วนกลาง</span>
+					<?php 
+					if ($project!=null){
+					?>
+						<span class="pull-right">
+					<?php
+						$PriceCamFee=($rowProject->CamFee)*$sumArea;
+					?>
+						฿<?=number_format($PriceCamFee, 0,'',',');?>/ด
+					</span>
+					<?php 
+					} else {
+					?>
+						<span class="pull-right">ไม่มีข้อมูล</span>
+					<?php
+					}
+					?>
+				</div>
+			</div>
+			<!--end row5-->
+
+			<!-- hide detail -->
+			<div class="col-md-7 col-md-offset-1 resize-mobile text-grey target-r4 display-none">
+				<div class="col-md-4 col-xs-4 padding-top10">
+					<span class="pull-left">&nbsp;</span><span class="pull-right">&nbsp;</span>
+				</div>
+				<div class="col-md-4 col-xs-4 border-left padding-top10">
+					<span class="pull-left">จำนวนห้องชุด</span>
+				<?php 
+				if ($project!=null){
+				?>
+					<span class="pull-right"><?=$rowProject->CondoUnit;?> ยูนิต</span>
+				<?php 
+				} else {
+				?>
+					<span class="pull-right">ไม่มีข้อมูล</span>
+				<?php
+				}
+				?>
+				</div>
+				<div class="col-md-4 col-xs-4 border-left padding-top10">
+					<span class="pull-left">ค่าส่วนกลางรายปี</span>
+				<?php 
+				if ($project!=null){
+				?>
+					<span class="pull-right">
+					฿<?=number_format($PriceCamFee*12, 0,'',',');?>/ด
+					</span>
+				<?php 
+				} else {
+				?>
+					<span class="pull-right">ไม่มีข้อมูล</span>
+				<?php
+					}
+				?>
+				</div>
+			</div>
+			<!--end detail-->
+				   
+			<div class="col-md-8">
+				<div class="pull-right">
+					<span id="down-r4" class="glyphicon glyphicon-menu-down btn-sm text-grey width-10" aria-hidden="true"></span>
+				</div>
+				<div class="pull-right">
+					<span id="up-r4" class="glyphicon glyphicon-remove btn-sm text-grey display-none width-10" aria-hidden="true"></span>
+				</div>             
+			</div>
+
+			<div class="clearfix"></div>
+					
+			<!-- row6 -->
+			<div class="bg-grey2"><!--new bg grey-->
+
+				<div class="col-md-7 col-md-offset-1 text-grey bg-grey2 resize-mobile ">
+					<br>
+					<h5 class="text-primary text-center">Facilities รอบ คอนโด<?=$PName_th;?></h5>
+					<div class="clearfix"></div>
+					<br>
+					<div class="col-md-4 col-xs-4 text-center">
+						<img src="/img/sc-icon.png">
+						โรงเรียน
+					</div>
+					<div class="col-md-4 col-xs-4 text-center">
+						<img src="/img/store-icon.png">
+						ช้อปปิ้ง
+					</div>
+					<div class="col-md-4 col-xs-4 text-center">
+						<img src="/img/hospital-icon.png">
+						โรงพยาบาล
+					</div>
+					<div class="clearfix"></div>
+					<br>
+
+					<div class="text-grey">
+						<div class="col-md-4 col-xs-4">
+						<?php 
+						if ($project!=null){
+						?>
+							<span class="pull-left"><?=$DistEducation[1][2];?></span>
+							<span class="pull-right"><?=$DistEducation[1][0];?> กม.</span>
+						<?php 
+						} else {
+						?>
+							<span class="pull-right">ไม่มีข้อมูล</span>
+						<?php
+						}
+						?>
+						</div>
+						<div class="col-md-4 col-xs-4 border-left min-height1">
+						<?php 
+						if ($project!=null){
+						?>
+							<span class="pull-left"><?=$DistShopingMall[1][2];?></span>
+							<span class="pull-right"><?=$DistShopingMall[1][0];?> กม.</span>
+						<?php 
+						} else {
+						?>
+							<span class="pull-right">ไม่มีข้อมูล</span>
+						<?php
+							}
+						?>
+						</div>
+						<div class="col-md-4 col-xs-4 border-left min-height1">
+						<?php 
+						if ($project!=null){
+						?>
+							<span class="pull-left"><?=$DistHospital[1][2];?></span>
+							<span class="pull-right"><?=$DistHospital[1][0];?> กม.</span>
+						<?php 
+						} else {
+						?>
+							<span class="pull-right">ไม่มีข้อมูล</span>
+						<?php
+							}
+						?>
+						</div>
+					</div>
+					<!--end row6-->
+
+					<!-- hide detail -->
+					<div class="text-grey target-r5 display-none">
+						<div class="col-md-4 col-xs-4">
+						<?php 
+						if ($project!=null){
+						?>
+							<span class="pull-left"><?=$DistEducation[2][2];?></span>
+							<span class="pull-right"><?=$DistEducation[2][0];?> กม.</span>
+						<?php 
+						} else {
+						?>
+							<span class="pull-right">ไม่มีข้อมูล</span>
+						<?php
+							}
+						?>
+						</div>
+						<div class="col-md-4 col-xs-4 border-left min-height1">
+						<?php 
+						if ($project!=null){
+						?>
+							<span class="pull-left"><?=$DistShopingMall[2][2];?></span>
+							<span class="pull-right"><?=$DistShopingMall[2][0];?> กม.</span>
+						<?php 
+						} else {
+						?>
+							<span class="pull-right">ไม่มีข้อมูล</span>
+						<?php
+							}
+						?>
+						</div>
+						<div class="col-md-4 col-xs-4 border-left min-height1">
+						<?php 
+						if ($project!=null){
+						?>
+							<span class="pull-left"><?=$DistHospital[2][2];?></span>
+							<span class="pull-right"><?=$DistHospital[2][0];?> กม.</span>
+						<?php 
+						} else {
+						?>
+							<span class="pull-right">ไม่มีข้อมูล</span>
+						<?php
+							}
+						?>
+						</div>
+					</div>
+					<div class="text-grey target-r5 display-none">
+						<div class="col-md-4 col-xs-4">
+						<?php 
+						if ($project!=null){
+						?>
+							<span class="pull-left"><?=$DistEducation[3][2];?></span>
+							<span class="pull-right"><?=$DistEducation[3][0];?> กม.</span>
+						<?php 
+						} else {
+						?>
+							<span class="pull-right">ไม่มีข้อมูล</span>
+						<?php
+						}
+						?>
+						</div>
+						<div class="col-md-4 col-xs-4 border-left min-height1">
+						<?php 
+						if ($project!=null){
+						?>
+							<span class="pull-left"><?=$DistShopingMall[3][2];?></span>
+							<span class="pull-right"><?=$DistShopingMall[3][0];?> กม.</span>
+						<?php 
+						} else {
+						?>
+							<span class="pull-right">ไม่มีข้อมูล</span>
+						<?php
+						}
+						?>
+						</div>
+						<div class="col-md-4 col-xs-4 border-left min-height1">
+						<?php 
+						if ($project!=null){
+						?>
+							<span class="pull-left"><?=$DistHospital[3][2];?></span>
+							<span class="pull-right"><?=$DistHospital[3][0];?> กม.</span>
+						<?php 
+						} else {
+						?>
+							<span class="pull-right">ไม่มีข้อมูล</span>
+						<?php
+						}
+						?>
+						</div>
+					</div>
+					<!--end detail-->
+
+					<div>
+						<div class="pull-right">
+							<span id="down-r5" class="glyphicon glyphicon-menu-down btn-sm text-grey width-10" aria-hidden="true"></span>
+						</div>
+						<div class="pull-right">
+							<span id="up-r5" class="glyphicon glyphicon-remove btn-sm text-grey display-none width-10" aria-hidden="true"></span>
+						</div> 
+					</div>
+
+				</div> <!--end new bg grey-->
+				<div class="clearfix"></div>
+
+			</div>  
+			 
+			<div class="clearfix"></div>
+
+			<br>
+			<div id="map_canvas2" class="border-grey2" style="height:50%; z-index:100px;"></div>
+			<!--<img class="img-responsive" src="/img/map03.png">-->
+				
+			<div class="clearfix"></div>
+			<br/><br/>
+			<div class="resize-mobile"><h5 class="text-primary text-center">คอนโดคล้ายกันที่ประกาศขาย/เช่า</h5></div>
+			<div class="col-md-12" id="cImgUnits">
+				<!-- insert image node here -->
+			</div>
+		</div>
+
+	</div>
+<!--End Container-->

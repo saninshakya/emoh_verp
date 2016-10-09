@@ -1,0 +1,600 @@
+<?php
+class Backend extends CI_Model {
+ 
+    function __construct()
+     {
+         // Call the Model constructor
+         parent::__construct();
+     }
+
+	 function checkAdmin()
+	{
+		 $user_id=$this->session->userdata('user_id');
+		 $query=$this->db->query('Select admin_group from users Where id="'.$user_id.'"');
+		 $rowQuery=$query->row();
+		 if ($rowQuery->admin_group==1){
+			 return 1;
+		 } else {
+			return 0;
+		}
+	}
+
+	function listKeyMarker($Type)
+	{
+		if ($Type!=""){
+			$query=$this->db->query('Select * from KeyMarker Where Type="'.$Type.'" Order By Type, KeyName');
+		} else {
+			$query=$this->db->query('Select * from KeyMarker Order By Type, KeyName');
+		}
+		return $query;
+	}
+	
+	function listKeyMarker2($Type)
+	{
+		if ($Type!=""){
+			$query=$this->db->query('Select a.*,b.name_th,b.name_en from KeyMarker a left join cfg_master b on a.SubType=b.id and a.Type=b.type where a.Type="'.$Type.'" Order By a.Status DESC,b.sort_no DESC,a.KeyName');
+		} else {
+			$query=$this->db->query('Select a.*,b.name_th,b.name_en from KeyMarker a left join cfg_master b on a.SubType=b.id and a.Type=b.type Order By a.Status DESC,b.sort_no DESC,a.KeyName');
+		}
+		return $query;
+	}
+
+	function getKeyMarker($ID)
+	{
+		$query=$this->db->query('Select a.*,b.Name_th,b.Name_en,b.Pic_path from KeyMarker a left join KeyMarkerType b on a.Type=b.Type Where a.ID="'.$ID.'"');
+		return $query;
+	}
+
+	function inputKeyMarker($data)
+	{
+		if ($data['KeyName']!="" and $data['KeyName_en']!="" and $data['Lat']!="" and $data['Lng']!="" and $data['Type']!="" ){
+			$this->db->query('Insert into KeyMarker set KeyName="'.$data['KeyName'].'",KeyName_en="'.$data['KeyName_en'].'", Lat="'.$data['Lat'].'", Lng="'.$data['Lng'].'", Type="'.$data['Type'].'", KeyID="'.$data['KeyID'].'"');
+			$this->updateDistMarker($data['KeyID']);
+		}
+	}
+
+	function distance($lat1, $lon1, $lat2, $lon2, $unit) {
+		$theta = $lon1 - $lon2;
+		$dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) +  cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta));
+		$dist = acos($dist);
+		$dist = rad2deg($dist);
+		$miles = $dist * 60 * 1.1515;
+		$unit = strtoupper($unit);
+		if ($unit == "K") {
+			return ($miles * 1.609344);
+		} else if ($unit == "N") {
+			return ($miles * 0.8684);
+		} else {
+			return $miles;
+		}
+	}
+
+	function updateDistMarker($KeyID)
+	{
+		$query=$this->db->query('select Lat, Lng, Type from KeyMarker Where KeyID="'.$KeyID.'"');
+		$rowQuery=$query->row();
+		$Lat1=$rowQuery->Lat;
+		$Lng1=$rowQuery->Lng;
+		$Type=$rowQuery->Type;
+		$query=$this->db->query('Select PID, Lat, Lng from Project');
+		foreach ($query->result() as $row){
+			$PID=$row->PID;
+			$Lat2=$row->Lat;
+			$Lng2=$row->Lng;
+			$dist= $this->distance($Lat1, $Lng1, $Lat2, $Lng2, "K")*1000;
+			if($dist<=50000){
+				$this->db->query('insert into DistMarker set PID="'.$PID.'", Station="'.$KeyID.'", Type="'.$Type.'", Distance="'.$dist.'"');
+			}
+		}
+	}
+
+	function delMarker($ID)
+	{
+		$query=$this->db->query('Select * from KeyMarker Where ID="'.$ID.'"');
+		$row=$query->row();
+		$KeyID=$row->KeyID;
+		$this->db->query('Delete from KeyMarker Where KeyID="'.$KeyID.'"');
+		$this->db->query('Delete from DistMarker Where Station="'.$KeyID.'"');
+	}
+
+	function delMarker2($PID)
+	{
+		$this->db->query('Delete from DistMarker Where PID="'.$PID.'"');
+	}
+	
+
+	function listProject()
+	{
+		$query=$this->db->query("Select * from Project order by PName_th");
+		return $query;
+	}
+
+	function addProject($data)
+	{
+		$dataSQL=array($data['PName_th'],$data['PName_en'],$data['Lat'],$data['Lng'],$data['Address'],$data['Soi'],$data['Road'],$data['District'],$data['Area'],$data['Province'],$data['Zipcode'],$data['YearEnd'],$data['CondoUnit'],$data['CarParkUnit'],$data['CamFee']);
+		$this->db->query('Insert into Project set PName_th=? , PName_en=?, Lat=?, Lng=?, Address=?, Soi=?, Road=?, District=?, Area=?, Province=?, Zipcode=?, YearEnd=?, CondoUnit=?, CarParkUnit=?, CamFee=?',$dataSQL);
+		$this->updateDistMarker2($data['PName_th'],$data['PName_en']);
+		$this->updateDistMarker3($data['PName_th'],$data['PName_en']);
+	}
+	
+	function updateDistMarker2($PName_th,$PName_en)
+	{
+		$query=$this->db->query('Select PID, Lat, Lng from Project Where PName_th="'.$PName_th.'" and PName_en="'.$PName_en.'"');
+		$rowQuery=$query->row();
+		$Lat1=$rowQuery->Lat;
+		$Lng1=$rowQuery->Lng;
+		$PID=$rowQuery->PID;
+		$query=$this->db->query('select KeyName,Lat, Lng, KeyID, Type from KeyMarker');
+		foreach ($query->result() as $row){
+			$Type=$row->Type;
+			$Lat2=$row->Lat;
+			$Lng2=$row->Lng;
+			$KeyID=$row->KeyID;
+			$dist=$this->distance($Lat1, $Lng1, $Lat2, $Lng2, "K")*1000;
+			if($dist<=50000){
+				$this->db->query('insert into DistMarker set PID="'.$PID.'", Station="'.$KeyID.'", Type="'.$Type.'", Distance="'.$dist.'"');
+			}
+		}
+	}
+	
+	function updateDistMarker3($PName_th,$PName_en)
+	{
+		$Type="Project";
+		$query=$this->db->query('select PID,Lat,Lng from Project Where PName_th="'.$PName_th.'" and PName_en="'.$PName_en.'" ');
+		foreach ($query->result() as $rowQuery){
+			$PID1=$rowQuery->PID;
+			$Lat1=$rowQuery->Lat;
+			$Lng1=$rowQuery->Lng;
+			$query=$this->db->query('Select PID,PName_th, Lat, Lng from Project where PID!="'.$PID1.'"');
+			foreach ($query->result() as $row){
+				$PID2=$row->PID;
+				$Lat2=$row->Lat;
+				$Lng2=$row->Lng;
+				$query2=$this->db->query('select PID from DistMarker where Type="'.$Type.'" and PID="'.$PID1.'" and Station="'.$PID2.'" ');
+				if($query2->num_rows()==0){
+					$dist= $this->distance($Lat1, $Lng1, $Lat2, $Lng2, "K")*1000;
+					if($dist<=50000){
+						$this->db->query('insert into DistMarker set PID="'.$PID1.'", Station="'.$PID2.'", Type="'.$Type.'", Distance="'.$dist.'"');
+					}
+				}
+			}
+		}
+	}
+
+	function editProject($data)
+	{
+		$this->delMarker2($data['PID']);
+		$dataSQL=array($data['PName_th'],$data['PName_en'],$data['Lat'],$data['Lng'],$data['Address'],$data['Soi'],$data['Road'],$data['District'],$data['Area'],$data['Province'],$data['Zipcode'],$data['YearEnd'],$data['CondoUnit'],$data['CarParkUnit'],$data['CamFee'],$data['PID']);
+		$this->db->query('Update Project set PName_th=? , PName_en=?, Lat=?, Lng=?, Address=?, Soi=?, Road=?, District=?, Area=?, Province=?, Zipcode=?, YearEnd=?, CondoUnit=?, CarParkUnit=?, CamFee=? Where PID=?',$dataSQL);
+		$this->updateDistMarker2($data['PName_th'],$data['PName_en']);
+		$this->updateDistMarker3($data['PName_th'],$data['PName_en']);
+		$dataSQL=array($data['PName_th'],$data['Lat'],$data['Lng'],$data['Soi'],$data['Road'],$data['District'],$data['Area'],$data['Province'],$data['PID']);
+		$this->db->query('update Post set ProjectName=?, Lat=?, Lng=?, Soi=?, Road=?, District=?, Area=?, Province=? Where PID=?',$dataSQL);
+	}
+
+	function listPost($TOProperty,$TOAdvertising,$Active)
+	{
+		$queryPost=$this->db->query('Select * from Post Where TOProperty="'.$TOProperty.'" and TOAdvertising="'.$TOAdvertising.'" and Active="'.$Active.'" order by DateCreate');
+		//echo 'Select * from Post Where TOProperty="'.$TOProperty.'" and TOAdvertising="'.$TOAdvertising.'" and Activate="'.$Activate.'" order by DateCreate';
+		return $queryPost;
+	}
+
+	function activatePost($POID)
+	{
+		$user_data = $this->users->get_user_by_id($this->tank_auth->get_user_id(),1);
+		$email=$user_data->email;
+		$TOAdvertising=$this->search->checkTypeAdvertising($POID);
+		$DateCreate=date("Y-m-d");
+		if ($TOAdvertising=="2"){
+			$this->db->query('Update Post set TotalPrice=DTotalPrice Where POID="'.$POID.'"');
+			$query=$this->db->query('Select DTotalPrice, DDownTotalPrice from Post Where POID="'.$POID.'"');
+			$row=$query->row();
+			$NewDTotalPrice=$row->DTotalPrice;
+			$NewDDownTotalPrice=$row->DDownTotalPrice;
+			$query=$this->db->query('Select DTotalPrice, DDownTotalPrice, DateCreate from LogDownCondoPrice Where POID="'.$POID.'"');
+			if ($query->num_rows() != 0 ){
+				$row=$query->row();
+				$OldDTotalPrice=$row->DTotalPrice;
+				$OldDDownTotalPrice=$row->DDownTotalPrice;
+				$OldDateCreate=$row->DateCreate;
+				if (($OldDTotalPrice!=$NewDTotalPrice) or ($OldDDownTotalPrice!=$NewDDownTotalPrice)){
+						if ($DateCreate!=$OldDateCreate){
+							$this->db->query('insert into LogDownCondoPrice Set POID="'.$POID.'", DTotalPrice="'.$NewDTotalPrice.'", DDownTotalPrice="'.$NewDDownTotalPrice.'", DateCreate="'.$DateCreate.'"');
+						} else {
+							$this->db->query('Update LogDownCondoPrice Set  DTotalPrice="'.$NewDTotalPrice.'", DDownTotalPrice="'.$NewDDownTotalPrice.'" Where POID="'.$POID.'" and DateCreate="'.$DateCreate.'"');
+						}
+				};
+			} else {
+				$this->db->query('insert into LogDownCondoPrice Set POID="'.$POID.'", DTotalPrice="'.$NewDTotalPrice.'", DDownTotalPrice="'.$NewDDownTotalPrice.'", DateCreate="'.$DateCreate.'"');
+			};
+		};
+		$this->db->query('Update Post set Active="1", ApproveBy="'.$email.'", ApproveDate="'.$DateCreate.'", PricePerSq=TotalPrice/useArea Where POID="'.$POID.'"');
+	}
+
+	function blockPost($data)
+	{
+		$user_data = $this->users->get_user_by_id($this->tank_auth->get_user_id(),1);
+		$email=$user_data->email;
+		$DateCreate=date("Y-m-d");
+		$query=$this->db->query('Select ID from BlockPostMsg Where POID="'.$data['POID'].'"');
+		if ($query->num_rows()=='0'){
+			$this->db->query('Insert into BlockPostMsg set POID="'.$data['POID'].'", Msg="'.$data['Msg'].'", DateCreate="'.$DateCreate.'"');
+		} else {
+			$this->db->query('Update BlockPostMsg set Msg="'.$data['Msg'].'", DateCreate="'.$DateCreate.'" Where POID="'.$data['POID'].'"');
+		}
+		//$this->db->query('Update Post set Active="3", Step1="0", Step2="0", Step3="0", Step4="0", Step5="0", BlockBy="'.$email.'", BlockDate="'.$DateCreate.'" Where POID="'.$data['POID'].'"'); 
+				//$this->db->query('Update Post set Active="3", Step1="0", Step2="0", Step3="0", Step4="0", Step5="0", BlockBy="'.$email.'", BlockDate="'.$DateCreate.'" Where POID="'.$data['POID'].'"'); 
+		//Remove reset step from blockpost
+		$this->db->query('Update Post set Active="3", BlockBy="'.$email.'", BlockDate="'.$DateCreate.'" Where POID="'.$data['POID'].'"'); 
+	}
+
+	function updateNotePost($data)
+	{
+		$DateCreate=date("Y-m-d");
+		$query=$this->db->query('Select ID from BlockPostMsg Where POID="'.$data['POID'].'"');
+		if ($query->num_rows()=='0'){
+			$this->db->query('Insert into BlockPostMsg set POID="'.$data['POID'].'", Msg2="'.$data['Msg2'].'", DateCreate="'.$DateCreate.'"');
+		} else {
+			$this->db->query('Update BlockPostMsg set Msg2="'.$data['Msg2'].'", DateCreate="'.$DateCreate.'" Where POID="'.$data['POID'].'"');
+		}
+	}
+
+	function qMsg($POID,$Type)
+	{
+			$query=$this->db->query('Select * from BlockPostMsg Where POID="'.$POID.'"');
+			if ($query->num_rows()=='0'){
+				$msg="";
+			} else {
+				$row=$query->row();
+				if ($Type==1){
+					$msg=$row->Msg;
+				} else {
+					$msg=$row->Msg2;
+				}
+			}
+			return $msg;
+	}
+	function adminDelUnit($POID)
+	{
+		$user_data = $this->users->get_user_by_id($this->tank_auth->get_user_id(),1);
+		$email=$user_data->email;
+		$DateCreate=date("Y-m-d");
+		$this->db->query('Update Post set Active="90", DelBy="'.$email.'", DelDate="'.$DateCreate.'" Where POID="'.$POID.'"');
+	}
+	
+	function updateHelpdesk($data){
+		$user_id=$this->session->userdata('user_id');
+		//print_r($data);
+		$i=0;
+		for($i=0;$i<=count($data['hid']);$i++)
+		{
+			if(isset($data['check_pass'][$i])){
+				if($data['check_pass'][$i]==1){
+					$informer_check=1;
+					$status=1;
+				}else{
+					$informer_check=1;
+					$status=0;
+				}
+				//echo $data['check_pass'][$i]."<br>";
+				$this->db->query('Update Helpdesk set informer_check="'.$informer_check.'", status="'.$status.'", log_user="'.$user_id.'" Where HID="'.$data['hid'][$i].'"');
+			}
+		}
+		return 1;
+	}
+	
+	function listProject2($data)
+	{
+		$this->db->select('Project.*,count(Post.POID) as unit');
+		$this->db->join('Post','Post.PID=Project.PID and Post.Active=1','LEFT');
+		if($data['ProjectName']!=''){
+			$this->db->like('Project.PName_th',$data['ProjectName']);
+		}
+		if($data['Province']!=''){
+			$this->db->like('Project.Province',$data['Province']);
+		}
+		$this->db->group_by('Project.PID');
+		$this->db->order_by('Project.PName_th','asc');
+		$query=$this->db->get('Project');
+		return $query;
+	}
+	
+	function listUnit($data)
+	{
+		$this->db->select('Post.*,users.email,cfg_master.name_th,TOAdvertising.AName_th');
+		$this->db->join('users','users.id=Post.user_id','LEFT');
+		$this->db->join('cfg_master','cfg_master.id=Post.active and cfg_master.type="active_post"','LEFT');
+		$this->db->join('TOAdvertising','TOAdvertising.toaid=Post.toadvertising','LEFT');
+		if($data['ProjectName']!=''){
+			$this->db->like('Post.projectname',$data['ProjectName']);
+		}
+		if($data['Ownername']!=''){
+			$this->db->like('Post.ownername',$data['Ownername']);
+		}
+		if($data['Advertising']!=''){
+			$this->db->where('Post.toadvertising',$data['Advertising']);
+		}
+		if($data['ActivePost']!=''){
+			$this->db->where('Post.active',$data['ActivePost']);
+		}
+		if(isset($data['expire_check'])){
+			if($data['expire_type']=='1'){//ก่อนหน้า
+				if($data['expire_day']!=''){
+					$this->db->where('Post.DateExpire<=date_add(curdate(),interval -"'.$data['expire_day'].'" day)');
+				}else{
+					$this->db->where('Post.DateExpire<curdate()');
+				}
+			}else{
+				if($data['expire_day']!=''){//ถัดไป
+					$this->db->where('Post.DateExpire between curdate() and date_add(curdate(),interval "'.$data['expire_day'].'" day)');
+				}else{
+					$this->db->where('Post.DateExpire>=curdate()');
+				}
+			}
+		}
+		$this->db->where('TOProperty','1');
+		$this->db->order_by('Post.toadvertising,Post.active,Post.projectname,Post.ownername');
+		$query=$this->db->get('Post');
+		return $query;
+	}
+
+	public function listview($POID)
+	{
+		$query=$this->db->query('Select count(ID) as CView from LogViewPost Where POID="'.$POID.'"');
+		$row=$query->row();
+		$CView=$row->CView;
+		$query=$this->db->query('Select count(ID) as CTel from LogViewPost Where POID="'.$POID.'" and ViewTelByUserID is not null');
+		$row=$query->row();
+		$CTel=$row->CTel;
+		$txt=$CView."/".$CTel;
+		return $txt;
+	}
+	
+	public function usertoemail($user_id)
+	{
+		$query=$this->db->query('select email from users Where id="'.$user_id.'"');
+		if ($query->num_rows()!=0){
+			$row=$query->row();
+			$txt=$row->email;
+		} else {
+			$txt="Guest";
+		}
+		return $txt;
+	}
+	
+	function listLabel($data)
+	{
+		if($data['Label']!=''){
+			$this->db->where('type',$data['Label']);
+		}
+		if($data['ActiveLabel']!=''){
+			$this->db->where('status',$data['ActiveLabel']);
+		}
+		$this->db->order_by('type asc,label asc');
+		$query=$this->db->get('cfg_label');
+		return $query;
+	}
+	
+	function updateLabel($data){
+		$user_id=$this->session->userdata('user_id');
+		//print_r($data);
+		$i=0;
+		for($i=0;$i<=sizeof($data['lid']);$i++){
+			$this->db->query('update cfg_label set description="'.trim($data['desc'][$i]).'", status="'.$data['status'][$i].'", log_user="'.$user_id.'" Where id="'.$data['lid'][$i].'"');
+		}
+		return 1;
+	}
+	
+	function updateMarker($mtype)
+	{
+		if($mtype!=''){
+			$qtype=' and Type="'.$mtype.'" ';
+		}else{
+			$qtype='';
+		}
+		$query=$this->db->query('select Lat,Lng,Type,KeyID from KeyMarker Where ID>="2475" '.$qtype.' order by Type ');
+		foreach ($query->result() as $rowQuery){
+			$Lat1=$rowQuery->Lat;
+			$Lng1=$rowQuery->Lng;
+			$Type=$rowQuery->Type;
+			$KeyID=$rowQuery->KeyID;
+			$query=$this->db->query('Select PID,PName_th, Lat, Lng from Project');
+			foreach ($query->result() as $row){
+				$PID=$row->PID;
+				$Lat2=$row->Lat;
+				$Lng2=$row->Lng;
+				$query2=$this->db->query('select PID from DistMarker where Type="'.$Type.'" and PID="'.$PID.'" and Station="'.$KeyID.'" ');
+				if($query2->num_rows()==0){
+					$dist= $this->distance($Lat1, $Lng1, $Lat2, $Lng2, "K")*1000;
+					if($dist<=20000){
+						$this->db->query('insert into DistMarker set PID="'.$PID.'", Station="'.$KeyID.'", Type="'.$Type.'", Distance="'.$dist.'"');
+						echo $KeyID.":".$row->PName_th."=>".$dist."<br>";
+					}
+				}
+			}
+		}
+	}
+
+	public function checkRep2($POID){
+		$query=$this->db->query('select RoomNumber, PID from Post Where POID="'.$POID.'"');
+		$row=$query->row();
+		$RoomNumber=$row->RoomNumber;
+		$PID=$row->PID;
+		if ($PID==null or $PID=="0"){
+			$txt="Black";
+		} else {
+			$query=$this->db->query('Select Count(POID) as CheckRoom from Post Where PID="'.$PID.'" and RoomNumber="'.$RoomNumber.'" and Active<10 and TOAdvertising=2' );
+			$row=$query->row();
+			$CheckRoom=$row->CheckRoom;
+			if ($CheckRoom>1){
+				$txt="Red";
+			} else {
+				$txt="Black";
+			}
+			if ($txt=="Black"){
+				$query=$this->db->query('Select Count(POID) as CheckRoom from Post Where PID="'.$PID.'" and Address="'.$RoomNumber.'" and Active<10 and TOAdvertising!=2');
+				$row=$query->row();
+				$CheckRoom=$row->CheckRoom;
+				if ($CheckRoom>0){
+					$txt="Green";
+				}
+			}
+		}
+		return $txt;
+	}
+
+	public function checkRep($POID){
+		$query=$this->db->query('select Address, PID from Post Where POID="'.$POID.'"');
+		$row=$query->row();
+		$Address=$row->Address;
+		$PID=$row->PID;
+		if ($PID==null or $PID=="0"){
+			$txt="Black";
+		} else {
+			$query=$this->db->query('Select Count(POID) as CheckRoom from Post Where PID="'.$PID.'" and Address="'.$Address.'" and Active<10 and TOAdvertising=1');
+			$row=$query->row();
+			$CheckRoom=$row->CheckRoom;
+			if ($CheckRoom>1){
+				$txt="Red";
+			} else {
+				$txt="Black";
+			}
+			if ($txt=="Black"){
+				$query=$this->db->query('Select Count(POID) as CheckRoom from Post Where PID="'.$PID.'" and Address="'.$Address.'" and Active<10 and TOAdvertising!=1');
+				$row=$query->row();
+				$CheckRoom=$row->CheckRoom;
+				if ($CheckRoom>0){
+					$txt="Green";
+				}
+			}
+		}
+		return $txt;
+	}
+
+	public function checkRep5($POID){
+		$query=$this->db->query('select Address, PID from Post Where POID="'.$POID.'"');
+		$row=$query->row();
+		$Address=$row->Address;
+		$PID=$row->PID;
+		if ($PID==null or $PID=="0"){
+			$txt="Black";
+		} else {
+			$query=$this->db->query('Select Count(POID) as CheckRoom from Post Where PID="'.$PID.'" and Address="'.$Address.'" and Active<10 and TOAdvertising=5');
+			$row=$query->row();
+			$CheckRoom=$row->CheckRoom;
+			if ($CheckRoom>1){
+				$txt="Red";
+			} else {
+				$txt="Black";
+			}
+			if ($txt=="Black"){
+				$query=$this->db->query('Select Count(POID) as CheckRoom from Post Where PID="'.$PID.'" and Address="'.$Address.'" and Active<10 and TOAdvertising!=5');
+				$row=$query->row();
+				$CheckRoom=$row->CheckRoom;
+				if ($CheckRoom>0){
+					$txt="Green";
+				}
+			}
+		}
+		return $txt;
+	}
+
+	public function queryImg($PID){
+		$file = array();
+		$query=$this->db->query('select PName_en from Project Where PID="'.$PID.'"');
+		$row=$query->row();
+		$pname=$row->PName_en;
+		$dirname = 'projImg/'.$pname;
+		$newdirname='projImg/'.$PID;
+		if (file_exists($dirname)) {
+			//echo "The file $dirname exists";
+			rename($dirname, $newdirname);
+			$query2=$this->db->query('select ImgID, file from ImagePost Where file like "/'.$dirname.'/%"');
+			if ($query2->num_rows()!=0){
+				foreach ($query2->result() as $row){
+					$ImgID=$row->ImgID;
+					$file=$row->file;
+					$file=str_replace($dirname,$newdirname,$file);
+					$this->db->query('update ImagePost set file="'.$file.'" where ImgID="'.$ImgID.'"');
+					//echo $file."<br>";
+				}
+			};
+		} ;
+		$dirname=$newdirname;
+		if (file_exists($dirname)) {
+			$map = directory_map($dirname.'/Picture');
+			if ($map!=false){
+				$total = sizeof($map);
+				for($i=0;$i<$total;$i++){
+					$file[$i] = $dirname.'/Picture/'.$map[$i];
+					//echo $file[$i]." ";
+				}
+			}
+		} else {
+			mkdir($dirname, 0755, true);
+			mkdir($dirname.'/Picture', 0755, true);
+			$file[0]="null";
+		}
+		return $file;
+	}
+
+	public function delImg($PID,$Img){
+		$filename="projImg/".$PID."/Picture/".$Img;
+		$dfilename="/".$filename;
+		$filename2="/home/zmyhome/public_html/".$filename;
+		$query=$this->db->query('delete from ImagePost Where file="'.$dfilename.'"');
+		unlink($filename);
+		//echo $filename;
+	}
+
+	public function chkImgUse($ImgUse){
+		$query=$this->db->query('Select count(ImgID) as CImgID from ImagePost Where file="'.$ImgUse.'"');
+		$row=$query->row();
+		$CImgID=$row->CImgID;
+		return $CImgID;
+	}
+	
+	function updateProfile($data){
+		$user_id=$this->session->userdata('user_id');
+		$this->db->query('update users set firstname="'.trim($data['firstname']).'",lastname="'.$data['lastname'].'",telephone="'.$data['telephone'].'",line_id="'.$data['line_id'].'" Where id="'.$data['id'].'"');
+		return 1;
+	}
+	
+	function listStation($data){
+		if($data['StationType']!=''){
+			$sStation=" and KeyMarker.Type='".$data['StationType']."' ";
+		}else{
+			$sStation=" and KeyMarker.Type in('BTS','MRT','BRT','ARL')";
+		}
+		if($data['Distance']!=''){
+			$sDistance=" and DistMarker.Distance<='".$data['Distance']."' ";
+		}else{
+			$sDistance=" and DistMarker.Distance<='1000' ";
+		}
+		$query=$this->db->query('select a.KeyID,a.KeyName,a.KeyName_en,a.Type,a.SubType,a.Status,b.name_th as LineName,sum(a.CondoUnit) as Unit,a.YearGroup from (select * from (select Distinct KeyMarker.KeyID,KeyMarker.KeyName,KeyMarker.KeyName_en,KeyMarker.Type,KeyMarker.SubType,KeyMarker.Status,Project.PID,Project.CondoUnit, if(Project.YearEnd<(Year(curdate())+543),"1","2") as YearGroup from Project,DistMarker,KeyMarker where Project.PID=DistMarker.PID and DistMarker.Station=KeyMarker.KeyID and (Project.YearEnd is not null and Project.YearEnd<>0) '.$sStation.$sDistance.' order by Project.PID,DistMarker.Distance ASC) aa group by PID) a left join cfg_master b on a.Type=b.type and a.SubType=b.id group by a.KeyID,a.YearGroup order by a.Type,a.Status DESC,a.SubType,a.KeyName,a.YearGroup');
+		return $query;
+	}
+	
+	function listStationProject($Station,$Distance,$YearGroup){
+		$sStation=" and DistMarker.Station='".$Station."' ";
+		$sDistance=" and DistMarker.Distance<='".$Distance."' ";
+		if($YearGroup==1){
+			$sYear=" and Project.YearEnd<(Year(curdate())+543)";
+		}else if($YearGroup==2){
+			$sYear=" and Project.YearEnd>=(Year(curdate())+543)";
+		}
+		$query=$this->db->query('select Distinct KeyMarker.KeyID,KeyMarker.KeyName,KeyMarker.KeyName_en,KeyMarker.Type,KeyMarker.SubType,KeyMarker.Status,DistMarker.Distance,Project.PID, Project.PName_th,Project.PName_en,Project.CondoUnit from Project,DistMarker,KeyMarker where Project.PID=DistMarker.PID and DistMarker.Station=KeyMarker.KeyID and (Project.YearEnd is not null and Project.YearEnd<>0) '.$sStation.$sDistance.$sYear.' order by DistMarker.Distance ASC,Project.PName_th');
+		return $query;
+	}
+
+	public function sendEmailActivate($POID)
+	{
+		$this->postemail->approve_email($POID);
+	}
+	
+	public function sendEmailBlock($POID)
+	{
+		$this->postemail->block_email($POID);
+	}
+}
+?>

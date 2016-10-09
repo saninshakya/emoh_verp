@@ -1,0 +1,137 @@
+<!--- footer -->
+<!--<p id="demo"></p>-->
+
+     <script type="text/javascript" src="/js/jquery-1.11.3.min.js"></script>
+     <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+	 <script type='text/javascript' src='/js/quicksilver.js'></script>
+	 <script type='text/javascript' src='/js/jquery.quickselect.js'></script>
+<?php 
+//if (!$this->agent->is_browser('Safari'))
+//{
+	$qMarker=$this->search->qMarker();
+?>
+    <script>
+
+    $('#namePoint').quickselect({
+      maxItemsToShow:10,
+       exactMatch:true,
+      data:[
+		  
+<?php
+		$endLine=sizeof($qMarker); 
+		$i=0;
+		While ($i<$endLine)
+		{
+			if ($i!=$endLine){
+				echo '"'.$qMarker[$i].'",';
+			} else {
+				echo '"'.$qMarker[$i].'"';
+			}
+			$i++;
+		}
+?>
+	  ],
+	  	  /*onItemSelect:function(){
+	  	var val = $('#namePoint').val();
+	  	$('#namePoint').val(val);
+	  }*/
+	   //exactMatch:true,
+	  //onItemSelect:function(){alert(this);},
+	
+	  
+	});
+
+      var checkValNamePoint=[		  
+<?php
+		$endLine=sizeof($qMarker); 
+		$i=0;
+		While ($i<$endLine)
+		{
+			if ($i!=$endLine){
+				echo '"'.$qMarker[$i].'",';
+			} else {
+				echo '"'.$qMarker[$i].'"';
+			}
+			$i++;
+		}
+?>
+	  ];
+	  
+	$('#btnSubmit').click(function(e){
+		//alert($('#namePoint').val());
+ 	if($('#namePoint').val()){
+ 		$('#myform').submit();
+ 	}else{
+ 		e.preventDefault();
+ 		return false;
+ 	}
+ });
+   	$("#myform").submit(function(e) {
+ 
+			if($('#namePoint').val()){
+				$(this)[0].submit();
+			}else{
+				e.preventDefault();
+ 				return false;
+ 			}
+		});	
+	
+	
+	var headMsg = [
+    {'head':'บ้าน คอนโด เจ้าของขายเอง','sub':'แนวคิดใหม่ของการซื้อ-เช่าบ้าน เพื่อคนไทย'},
+    {'head':'คนไทยใช้เวลาขายบ้านเฉลี่ย 343 วัน*','sub':'ประเทศพัฒนาแล้วใช้เวลา 27-55 วัน*'},
+    {'head':'เริ่มจากให้ข้อมูลและภาพครบถ้วน','sub':'ขายตามราคาประกาศ ไม่ลงซ้ำ และอัพเดทเสมอ'},
+    {'head':'คุณขายหรือเช่าได้ฟรี','sub':'เพียงลงประกาศอย่างมีคุณภาพ และให้ข้อมูลที่มีประโยชน์'},
+    {'head':'ซื้อ ขาย เช่า ได้ตามต้องการ','sub':'"ด้วยตัวคุณ" และ "ZmyHome"'}];
+	
+	
+	
+	$(function () { 
+		
+		var index = 0;
+		setInterval(function () {
+		  $('#hMsg').fadeOut(2000, function() {
+        	$('#hMsg').html(headMsg[index].head);
+        	$('#hMsg').fadeIn(2000);
+    	  });
+    	  
+    	  
+    	  $('#sMsg').fadeOut(2000, function() {
+        	$('#sMsg').html(headMsg[index].sub);
+        	
+        	$('#sMsg').fadeIn(2000);
+    	  });
+    	  if(index<(headMsg.length-1)){
+    	  	index++;
+    	  }else{
+    	  	index = 0;
+    	  }
+   		},7000);
+   		
+   /*		$(window).keydown(function(event){
+    if(event.keyCode == 13) {
+      event.preventDefault();
+      return false;
+    }
+  });*/
+ 
+
+		
+	});
+    </script>
+<?php
+//};
+?>
+     <script type="text/javascript">
+        $(".buy-button").click(function(){
+        $("#b1, #b2").toggleClass( "buy-button", 1000, "rent-button" );
+        $("#b2, #b1").toggleClass( "rent-button", 1000, "buy-button" );
+        });
+
+        $(".rent-button").click(function(){
+        $("#b2, #b1").toggleClass( "rent-button", 1000, "buy-button" );
+        $("#b1, #b2").toggleClass( "buy-button", 1000, "rent-button" );
+        });
+</script>
+</body>
+</html>

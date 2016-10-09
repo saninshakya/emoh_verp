@@ -1,0 +1,67 @@
+<br>
+<div align="center">ค้นหาห้อง</div>
+<br>
+<font color="blue">
+<?php
+$attributes = array('class' => 'email', 'id' => 'myform');
+echo form_open('/zhome/listUnit',$attributes);
+?>
+<table align="center" border="0">
+	<tr>
+		<td id="ShowProjectName" align="right">ชื่อโครงการ * (กรุณากรอกเป็นภาษาไทย) : </td>
+		<td><input id="ProjectName" Name="ProjectName" class="form-control input-md" type="text" <?php if ($ProjectName!=""){echo 'Value="'.$ProjectName.'"';};?> placeholder="ระบุชื่อโครงการ"  onchange="setTimeout(function(){updateProjectName()}, 1000);" onSelect="setTimeout(function(){updateProjectName()}, 1000);" ></td>
+	</tr>
+	<tr height="5px"><td></td></tr>
+	<tr>
+		<td align="right">ชื่อเจ้าของห้อง : </td>
+		<td><input id="Ownername" Name="Ownername" class="form-control input-md" type="text" <?php if ($Ownername!=""){echo 'Value="'.$Ownername.'"';};?> placeholder="ระบุชื่อเจ้าของห้อง"></td>
+	</tr>
+	<tr height="5px"><td></td></tr>
+	<tr>
+		<td align="right">ประเภท : </td>
+		<td>
+			<select id="Advertising" name="Advertising" class="form-control input-md">
+				<option value="">ทั้งหมด</option>
+				<?php
+					foreach ($qTOAdvertising->result() as $row)
+					{
+						if ($Advertising==$row->TOAID){
+							$sel="selected";
+						} else {
+							$sel="";
+						}
+						echo '<option value="'.$row->TOAID.'" class="text-grey" '.$sel.'>'.$row->AName_th.'</option>';
+					}
+				?>
+			</select>
+		</td>
+	</tr>
+	<tr height="5px"><td></td></tr>
+	<tr>
+		<td align="right">สถานะ : </td>
+		<td>
+			<select id="ActivePost" name="ActivePost" class="form-control input-md">
+				<option value="">ทั้งหมด</option>
+				<?php
+					foreach ($qActivePost->result() as $row)
+					{
+						if ($ActivePost==$row->id){
+							$sel="selected";
+						} else {
+							$sel="";
+						}
+						echo '<option value="'.$row->id.'" class="text-grey" '.$sel.'>'.$row->name_th.'</option>';
+					}
+				?>
+			</select>
+		</td>
+	</tr>
+	<tr height="5px"><td></td></tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td align="right"><?php echo form_submit('search','ค้นหา');?></td>
+	</tr>
+</table>
+</font>
+<br>
+<?php echo form_close();?>

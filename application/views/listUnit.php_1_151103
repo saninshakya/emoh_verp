@@ -1,0 +1,81 @@
+<br>
+<div align="center">รายชื่อห้อง</div>
+<br>
+<font color="blue">
+<table align="center" border="1">
+	<tr>
+		<td align="center">ลำดับที่</td>
+		<td align="center">วันที่ลงประกาศ</td>
+		<td align="center">โครงการ</td>
+		<td align="center">ชื่อเจ้าของ</td>
+		<td align="center">เบอร์โทร</td>
+		<td align="center">LineID</td>
+		<td align="center">email</td>
+		<td align="center">ตึก</td>
+		<td align="center">Unit</td>
+		<td align="center">ชั้น</td>
+		<td align="center">ห้องนอน</td>
+		<td align="center">ห้องน้ำ</td>
+		<td align="center">ทิศ</td>
+		<td align="center">พื้นที่ใช้สอย</td>
+		<td align="center">จำนวนรูปภาพ</td>
+		<td align="center">ราคารวม</td>
+		<td align="center">ราคาที่ซื้อจากโครงการ</td>
+		<td align="center">เงินจอง/ดาวน์</td>
+		<td align="center">ราคาขายดาวน์</td>
+		<td align="center">แจ้งเตือนสาเหตุ</td>
+		<td align="center">Notes</td>
+	</tr>
+<?php
+	$colfix=21;
+	$i=1;
+	$advertising_check="";
+	$active_check="";
+	foreach ($listUnit->result() as $row){
+		
+		if($advertising_check!=$row->TOAdvertising){
+			echo "<tr>";
+			echo "<td colspan='".$colfix."' bgcolor='#ffff80' style='color:#ff0000;font-weight:bold;'>&nbsp;ประเภท :&nbsp;".$row->AName_th."</td>";
+			echo "</tr>";
+			$advertising_check=$row->TOAdvertising;
+			$active_check="";
+			$i=1;
+		}
+		
+		if($active_check!=$row->Active){
+			echo "<tr>";
+			echo "<td colspan='".$colfix."' bgcolor='#b3ffff' style='color:#000000;font-weight:bold;'>&nbsp;สถานะ :&nbsp;".$row->name_th."</td>";
+			echo "</tr>";
+			$active_check=$row->Active;
+		}
+
+?>
+		<tr>
+			<td align="center">&nbsp;<?=$i;?>&nbsp;</td>
+			<td align="center">&nbsp;<?=$row->DateCreate;?>&nbsp;</td>
+			<td align="left">&nbsp;<?=$row->ProjectName;?>&nbsp;</td>
+			<td align="left">&nbsp;<?=$row->OwnerName;?>&nbsp;</td>
+			<td align="right">&nbsp;<?=$row->Telephone1;?>&nbsp;</td>
+			<td align="left">&nbsp;<?=$row->LineID;?>&nbsp;</td>
+			<td align="left">&nbsp;<?=$row->Email1;?>&nbsp;</td>
+			<td align="center">&nbsp;<?=$row->Tower;?>&nbsp;</td>
+			<td align="center">&nbsp;<?=$row->RoomNumber;?>&nbsp;</td>
+			<td align="center">&nbsp;<?=$row->Floor;?>&nbsp;</td>
+			<td align="center">&nbsp;<?=$row->Bedroom;?>&nbsp;</td>
+			<td align="center">&nbsp;<?=$row->Bathroom;?>&nbsp;</td>
+			<td align="left">&nbsp;<?=$this->search->KeyDirection_th($row->Direction);?>&nbsp;</td>
+			<td align="right">&nbsp;<?=$row->useArea;?>&nbsp;</td>
+			<td align="right">&nbsp;<?=$this->search->CountImg($row->POID);?>&nbsp;</td>
+			<td align="right">&nbsp;<?=number_format($row->DTotalPrice, 0,'',',');?>&nbsp;</td>
+			<td align="right">&nbsp;<?=number_format($row->DNetPrice, 0,'',',');?>&nbsp;</td>
+			<td align="right">&nbsp;<?=number_format($row->DAllPayment, 0,'',',');?>&nbsp;</td>
+			<td align="right">&nbsp;<?=number_format($row->DDownTotalPrice, 0,'',',');?>&nbsp;</td>
+			<td align="center">&nbsp;<?=$this->dashboard->checkMsg($row->POID);?>&nbsp;</td>
+			<td align="center">&nbsp;<?=$this->dashboard->checkMsg2($row->POID);?>&nbsp;</td>
+		</tr>
+<?php
+	 $i++;
+	}
+?>
+</table>
+<br>

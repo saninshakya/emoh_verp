@@ -1,0 +1,417 @@
+<?php
+$this->session->set_userdata('last_page','32');
+$attributes = array('class' => 'email', 'id' => 'myform');
+echo form_open('/zhome/changePage1', $attributes);
+?>
+<input type="hidden" name="key_change" id="key_change" value="5">
+<input type="hidden" name="last_page" id="last_page" value="32">
+<input type="hidden" name="DTotalPrice" id="DTotalPrice" value="<?php echo $this->post->checkPost('DTotalPrice');?>">
+<input type="hidden" name="DNetPrice" id="DNetPrice" value="<?php echo $this->post->checkPost('DNetPrice');?>">
+<input type="hidden" name="DProfitPrice" id="DProfitPrice" value="<?php echo $this->post->checkPost('DProfitPrice');?>">
+<input type="hidden" name="DChangeContractPrice" id="DChangeContractPrice" value="<?php echo $this->post->checkPost('DChangeContractPrice');?>">
+<input type="hidden" name="DBrokerPrice" id="DBrokerPrice" value="<?php echo $this->post->checkPost('DBrokerPrice');?>">
+<input type="hidden" name="DBrokerTotalPrice" id="DBrokerTotalPrice" value="<?php echo $this->post->checkPost('DBrokerTotalPrice');?>">
+<input type="hidden" name="DDownTotalPrice" id="DDownTotalPrice" value="<?php echo $this->post->checkPost('DDownTotalPrice');?>">
+<input type="hidden" name="DBookPrice" id="DBookPrice" value="<?php echo $this->post->checkPost('DBookPrice');?>">
+<input type="hidden" name="DContractPrice1" id="DContractPrice1" value="<?php echo $this->post->checkPost('DContractPrice1');?>">
+<input type="hidden" name="DContractPrice2" id="DContractPrice2" value="<?php echo $this->post->checkPost('DContractPrice2');?>">
+<input type="hidden" name="DContractPrice3" id="DContractPrice3" value="<?php echo $this->post->checkPost('DContractPrice3');?>">
+<input type="hidden" name="DDownPrice" id="DDownPrice" value="<?php echo $this->post->checkPost('DDownPrice');?>">
+<input type="hidden" name="DTransfer" id="DTransfer" value="<?php echo $this->post->checkPost('DTransfer');?>">
+<input type="hidden" name="DDownPaymentReady" id="DDownPaymentReady" value="<?php echo $this->post->checkPost('DDownPaymentReady');?>">
+<input type="hidden" name="DReadyPayment" id="DReadyPayment" value="<?php echo $this->post->checkPost('DReadyPayment');?>">
+<input type="hidden" name="DStalePayment" id="DStalePayment" value="<?php echo $this->post->checkPost('DStalePayment');?>">
+<input type="hidden" name="DTransferPayment" id="DTransferPayment" value="<?php echo $this->post->checkPost('DTransferPayment');?>">
+
+<input type="hidden" name="useArea" id="useArea" value="<?php echo $this->post->checkPost('useArea');?>">
+<input type="hidden" name="terraceArea" id="terraceArea" value="<?php echo $this->post->checkPost('terraceArea');?>">
+<?php
+	$totalArea=($this->post->checkPost('useArea'))+($this->post->checkPost('terraceArea'));
+	$PricePerSq=$this->post->checkPost('PricePerSq');
+?>
+<input type="hidden" name="totalArea" id="totalArea" value="<?php echo $totalArea;?>">
+<input type="hidden" name="PricePerSq" id="PricePerSq" value="<?php echo $PricePerSq;?>">
+<div class="container">
+        <div class="row">
+          
+          <div class="col-md-7 col-md-push-2">
+            <h3 class="text-primary">ตั้งราคาขายดาวน์</h3>
+              <p class="text-primary">การขายดาวน์ต้องบอกรายละเอียดการผ่อนชำระ และค่าใช้จ่ายตามสัญญาให้ครบถ้วน</p>
+            <hr>
+            <div class="row">
+               <div class="col-md-8">
+					<h5>สรุปรายละเอียดการขายใบจองหรือขายดาวน์</h5>
+					<div class="col-md-4">
+					<p>ราคาขาย</p>
+					</div>
+					<div class="col-md-4">
+					<p>&nbsp;</p>
+					</div>
+					<div class="col-md-4">
+					<p><span class="text-green" id="showDTotalPrice">฿<?php echo number_format($this->post->checkPost('DTotalPrice'),0,'.',',');?></span> บาท (<span class="text-green" id="showPricePerSq">฿<?php echo number_format($PricePerSq,0,'.',',');?></span>/ตร.ม.)</p>
+					</div>
+				</div>
+			</div>
+            <div class="row">
+               <div class="col-md-8">
+            	<div class="col-md-4">
+					<p>- มูลค่าขายดาวน์ (รวมค่าเปลี่ยนสัญญา่ ถ้ามี)</p>
+				</div>
+					<div class="col-md-4">
+					<p>&nbsp;</p>
+					</div>
+				<div class="col-md-4">
+					<p><span class="text-green" id="showDDownTotalPrice">฿<?php echo number_format($this->post->checkPost('DDownTotalPrice'),0,'.',',');?></span> บาท</p>
+				</div>
+			</div>
+			</div>
+            <div class="row">
+               <div class="col-md-8">
+            	<div class="col-md-4">
+					<p>- ชำระกับโครงการอีก เป็นจำนวน</p>
+				</div>
+					<div class="col-md-4">
+					<p>&nbsp;</p>
+					</div>
+				<div class="col-md-4">
+					<p><span class="text-green" id="showDStalePayment2">฿<?php echo number_format($this->post->checkPost('DStalePayment'),0,'.',',');?></span> บาท (<span class="text-green" id="showDStalePaymentMonth"><?php echo  $this->post->checkPost('DStalePaymentMonth');?></span> งวด)</p>
+				</div>
+			</div>
+			</div>
+            <div class="row">
+               <div class="col-md-8">
+            	<div class="col-md-4">
+					<p>- โอนกรรมสิทธิ ณ กรมที่ดิน</p>
+				</div>
+					<div class="col-md-4">
+					<p>&nbsp;</p>
+					</div>
+				<div class="col-md-4">
+					<p><span class="text-green" id="showDTransferPayment2">฿<?php echo number_format($this->post->checkPost('DTransferPayment'),0,'.',',');?></span> บาท</p>
+				</div>
+			</div>
+			</div>
+
+			<hr>
+			<div class="row">
+               <div class="col-md-4">
+                 <p>ราคาหน้าสัญญาจะซื้อจะขาย / ใบจอง (บาท)</p>
+                 <input class="form-control input-md" type="text" name="showDNetPrice" id="showDNetPrice" value="฿<?php echo number_format($this->post->checkPost('DNetPrice'),0,'.',',');?>" onclick="this.value=''" onchange="changeFormat('showDNetPrice','DNetPrice');setTimeout(function(){calDTotalPrice()}, 100);">
+               </div>
+               <div class="col-md-4">
+               <p>&nbsp;</p>
+               </div>
+               <div class="col-md-4">
+                <p>ระยะเวลายืนยันราคาขาย**</p>
+                <select class="form-control input-md" name="AgreePostDay" id="AgreePostDay" onchange="updatePost('AgreePostDay')">
+				  <?php
+					$i=30;
+					while ($i<=180){
+				  ?>
+                    <option value="<?php echo $i;?>" <?php if ($this->post->checkPost('AgreePostDay')==$i){echo "selected";};?>><?php echo $i;?>วัน</option>
+				  <?php
+					  $i=$i+30;
+					}
+				  ?>
+                </select>
+               </div>
+            </div> 
+            <br/> 
+            <div class="row">
+               <div class="col-md-4">
+                 <p>ต้องการกำไร / ขาดทุน</p>
+                   <select class="form-control input-md" name="PrefixDProfitPrice" id="PrefixDProfitPrice" onchange="updatePost('PrefixDProfitPrice');calDTotalPrice();">
+                          <option value="1" <?php if ($this->post->checkPost('PrefixDProfitPrice')==1){echo "selected";};?>>ต้องการกำไร</option>
+                          <option value="0" <?php if ($this->post->checkPost('PrefixDProfitPrice')==0){echo "selected";};?>>ยอมขาดทุน</option>
+                   </select>  
+               </div>
+               <div class="col-md-4">
+                 <p>กำไร / ขาดทุนที่ต้องการ (บาท)</p>
+                 <input class="form-control input-md" type="text" name="showDProfitPrice" id="showDProfitPrice" value="฿<?php echo number_format($this->post->checkPost('DProfitPrice'),0,'.',',');?>" onclick="this.value=''" onchange="changeFormat('showDProfitPrice','DProfitPrice');setTimeout(function(){calDTotalPrice()}, 100);">
+               </div>
+            </div>
+            <br/>
+            <div class="row">
+               <div class="col-md-4">
+                 <p>ค่าธรรมเนียมการเปลี่ยนสัญญา</p>
+                 <input class="form-control input-md" type="text" name="showDChangeContractPrice" id="showDChangeContractPrice" value="฿<?php echo number_format($this->post->checkPost('DChangeContractPrice'),0,'.',',');?>" onclick="this.value=''" onchange="changeFormat('showDChangeContractPrice','DChangeContractPrice');setTimeout(function(){calDTotalPrice()}, 100);">
+               </div>
+               <div class="col-md-7">
+                 <p>(กฎหมายห้ามไม่ให้โครงการเก็บ แต่ควรตรวจสอบสัญญาอีกครั้ง)</p>
+               </div>
+            </div>    
+               
+              
+            
+            <hr/>
+            <div class="row">
+              <div class="col-md-12">
+                   <h5>การใช้บริการนายหน้า</h5>
+                    <ul class="list-inline">
+                      <li>
+                        <div class="checkbox table-bordered padding-pro2">
+                          <label>
+						   <input type="checkbox" name="DBroker" id="DBroker" <?php if ($this->post->checkPost('DBroker')=='1'){echo "Checked";};?> value="<?php echo $this->post->checkPost('DBroker');?>" onclick="changeValue('DBroker');updatePost('DBroker');">
+						   <p class="text-grey">ยืนยันให้นายหน้าช่วยขาย</p>
+                          </label>
+                        </div>
+                      </li>
+                      <li><span class="text-danger">ค่าบริการ 2.0%</span><span class="text-danger" id="showDBrokerPrice">฿<?php echo number_format($this->post->checkPost('DBrokerPrice'),0,'.',',');?></span></li>
+                    </ul>
+                    <p class="text-grey">ราคาขายรวมค่านายหน้า <span class="text-green" id="showDBrokerTotalPrice">฿<?php echo number_format($this->post->checkPost('DBrokerTotalPrice'),0,'.',',');?></span>
+              </div>
+            </div>
+            <hr/>
+			<div class="row">
+                  <div class="col-md-12"><h5>การชำระเงินทำสัญญาและเงินดาวน์</h5></div>
+                  <div class="col-md-4">
+                   <p>ชำระแล้ว (บาท)</p>
+                   <input class="form-control input-md" type="text" name="showDReadyPayment" id="showDReadyPayment" value="฿<?php echo number_format($this->post->checkPost('DReadyPayment'),0,'.',',');?>" onclick="this.value=''" onchange="changeFormat('showDReadyPayment','DReadyPayment');setTimeout(function(){calDDownTotalPrice()}, 100);">
+                  </div>
+				   <div class="col-md-4">
+                   <p>ผ่อนดาวน์อีก (บาท)</p>
+                   <input class="form-control input-md" type="text" name="showDStalePayment" id="showDStalePayment" value="฿<?php echo number_format($this->post->checkPost('DStalePayment'),0,'.',',');?>" disabled>
+                  </div>
+                  <div class="col-md-4">
+                   <p>ปรวัติการชำระ</p>
+                   <select class="form-control input-md" name="HistoryDPayment" id="HistoryDPayment" onchange="updatePost('HistoryDPayment');">
+                          <option value="0" <?php if ($this->post->checkPost('HistoryDPayment')==0){echo "selected";};?>>ชำระตรงตามเวลา</option>
+                          <option value="1" <?php if ($this->post->checkPost('HistoryDPayment')==1){echo "selected";};?>>ชำระล่าช้าไม่เกิน 1 เดือน</option>
+                          <option value="2" <?php if ($this->post->checkPost('HistoryDPayment')==2){echo "selected";};?>>ค้างชำระ</option>
+                   </select>                  
+                  </div>
+			</div>
+			<div class="row">
+				   <div class="col-md-4">
+                   <p>ผ่อนดาวน์อีก (งวด)</p>
+                   <input class="form-control input-md" type="text" name="DStalePaymentMonth" id="DStalePaymentMonth" value="<?php echo $this->post->checkPost('DStalePaymentMonth');?>" onchange="updatePost('DStalePaymentMonth');showDStalePaymentMonth();">
+                  </div>
+			</div>
+			<div class="row">
+                  <div class="col-md-4">
+                   <p>ยอดโอน (บาท)</p>
+                   <input class="form-control input-md" type="text" name="showDTransferPayment" id="showDTransferPayment" value="฿<?php echo number_format($this->post->checkPost('DTransferPayment'),0,'.',',');?>" onclick="this.value=''" onchange="changeFormat('showDTransferPayment','DTransferPayment');setTimeout(function(){calDDownTotalPrice()}, 100);showDTransferPayment2();">
+                  </div>
+			</div>
+			<hr/>
+            
+            <div class="row">
+           
+                  <div class="col-md-12"><h5>โปรโมชั่นที่ได้รับจากโครงการ</h5></div>
+                  <div class="col-md-4">
+                    <div class="checkbox table-bordered padding-pro2">
+                          <label>
+                           <input type="checkbox" name="DFreeTransfer" id="DFreeTransfer" <?php if ($this->post->checkPost('DFreeTransfer')=='1'){echo "Checked";};?> value="<?php echo $this->post->checkPost('DFreeTransfer');?>" onclick="changeValue2('DFreeTransfer');"><p class="text-grey">ฟรีค่าธรรมเนียมการโอน</p>
+                          </label>
+                    </div>
+                    <p>&nbsp;</p>
+                    <div class="checkbox table-bordered padding-pro2">
+                          <label>
+                           <input type="checkbox" name="DFreeMember" id="DFreeMember" <?php if ($this->post->checkPost('DFreeMember')=='1'){echo "Checked";};?> value="<?php echo $this->post->checkPost('DFreeMember');?>" onclick="changeValue2('DFreeMember');"><p class="text-grey">ฟรีเงินกองทุนนิติบุคคลฯ</p>
+                          </label>
+                    </div>
+                    <p>เฟอร์นิเจอร์</p>
+                    <input class="form-control input-md" type="text" placeholder="ระบุ"name="DFreeFurniture" id="DFreeFurniture"  value="<?php echo $this->post->checkPost('DFreeFurniture');?>" onchange="updatePost('DFreeFurniture');">
+                    <p>อื่นๆ</p>
+                    <input class="form-control input-md" type="text" placeholder="ระบุ"name="DFreeETC" id="DFreeETC"  value="<?php echo $this->post->checkPost('DFreeETC');?>" onchange="updatePost('DFreeETC');">
+                  </div>
+
+
+                  <div class="col-md-4">
+                    <div class="checkbox table-bordered padding-pro2">
+                          <label>
+                           <input type="checkbox" name="DFreeContract" id="DFreeContract" <?php if ($this->post->checkPost('DFreeContract')=='1'){echo "Checked";};?> value="<?php echo $this->post->checkPost('DFreeContract');?>" onclick="changeValue2('DFreeContract');"><p class="text-grey">ฟรีค่าจดจำนอง</p>
+                          </label>
+                    </div>
+                    <p>ฟรีค่าส่วนกลาง</p>
+                    <select class="form-control input-md" name="DFreeFeeMember" id="DFreeFeeMember" onchange="updatePost('DFreeFeeMember');">
+				   <?php
+						$i=0;
+						while ($i<=10){
+				   ?>
+                          <option value="<?php echo $i;?>" <?php if ($this->post->checkPost('DFreeFeeMember')==$i){echo "selected";};?>><?php echo $i;?>ปี</option>
+				   <?php
+							$i++;
+						}
+				   ?>
+                    </select>
+                    <br/>
+                    <p>เครื่องใช้ไฟฟ้า</p>
+                    <input class="form-control input-md" type="text" placeholder="ระบุ"name="DFreeElectric" id="DFreeElectric"  value="<?php echo $this->post->checkPost('DFreeElectric');?>" onchange="updatePost('DFreeElectric');">       
+                  </div>
+                  <div class="col-md-4">
+                    <div class="checkbox table-bordered padding-pro2">
+                          <label>
+                           <input type="checkbox" name="DFreeMeter" id="DFreeMeter" <?php if ($this->post->checkPost('DFreeMeter')=='1'){echo "Checked";};?> value="<?php echo $this->post->checkPost('DFreeMeter');?>" onclick="changeValue2('DFreeMeter');"><p class="text-grey">เงินประกันมิเตอร์ น้ำ/ไฟ</p>
+                          </label>
+                    </div>
+                    <p>ส่วนลด (บาท)</p>
+                    <input class="form-control input-md" type="text" placeholder="ระบุ"name="DDiscount" id="DDiscount"  value="<?php echo $this->post->checkPost('DDiscount');?>" onchange="updatePost('DDiscount');">
+                    <br/>       
+                    <p>Voucher</p>
+                    <input class="form-control input-md" type="text" placeholder="ระบุ"name="DFreeVoucher" id="DFreeVoucher"  value="<?php echo $this->post->checkPost('DFreeVoucher');?>" onchange="updatePost('DFreeVoucher');">
+                  </div>                 
+            </div>
+			</hr>
+			<hr>
+            <div class="row">
+                  <div class="col-md-12"><h5>แสดงเบอร์โทรฟรีเพิ่ม 1 สัปดาห์ เพียงกรอกข้อมูลด้านล่าง (เพิ่มเติมภายหลังได้)</h5></div>
+                  <div class="col-md-4">
+                   <p>จอง (บาท)</p>
+                   <input class="form-control input-md" type="text" name="showDBookPrice" id="showDBookPrice" value="฿<?php echo number_format($this->post->checkPost('DBookPrice'),0,'.',',');?>" onclick="this.value=''" onchange="changeFormat('showDBookPrice','DBookPrice');">
+                  </div>
+                  <div class="col-md-4">
+                   <p>วันที่</p>
+                   <input class="form-control input-md" type="text" name="DBookDate" id="DBookDate" onblur="setTimeout(function(){updatePost('DBookDate')}, 500);" value="<?php echo $this->post->checkPost('DBookDate');?>">
+                  </div>
+                  <div class="col-md-4">
+                   <p>สถานะการชำระ</p>
+                   <select class="form-control input-md" name="DBookStatus" id="DBookStatus" onchange="updatePost('DBookStatus');setTimeout(function(){calDDownTotalPrice()}, 100);">
+                          <option value="1" <?php if ($this->post->checkPost('DBookStatus')==1){echo "selected";};?>>ชำระแล้ว</option>
+                          <option value="0" <?php if ($this->post->checkPost('DBookStatus')==0){echo "selected";};?>>ยังไม่ชำระ</option>
+                   </select>                  
+                  </div>
+
+                  <div class="col-md-4">
+                   <p>ทำสัญญางวดที่ 1 (บาท)</p>
+                   <input class="form-control input-md" type="text" name="showDContractPrice1" id="showDContractPrice1" value="฿<?php echo number_format($this->post->checkPost('DContractPrice1'),0,'.',',');?>" onclick="this.value=''" onchange="changeFormat('showDContractPrice1','DContractPrice1');">
+                  </div>
+                  <div class="col-md-4">
+                   <p>วันที่</p>
+                   <input class="form-control input-md" type="text" name="DContractDate1" id="DContractDate1" onblur="setTimeout(function(){updatePost('DContractDate1')}, 500);" value="<?php echo $this->post->checkPost('DContractDate1');?>">
+                  </div>
+                  <div class="col-md-4">
+                   <p>สถานะการชำระ</p>
+                   <select class="form-control input-md" name="DContractStatus1" id="DContractStatus1" onchange="updatePost('DContractStatus1');">
+                          <option value="1" <?php if ($this->post->checkPost('DContractStatus1')==1){echo "selected";};?>>ชำระแล้ว</option>
+                          <option value="0" <?php if ($this->post->checkPost('DContractStatus1')==0){echo "selected";};?>>ยังไม่ชำระ</option>
+                   </select>                  
+                  </div>
+                  <div class="col-md-4">
+                   <p>ทำสัญญางวดที่ 2 (บาท)</p>
+                   <input class="form-control input-md" type="text" name="showDContractPrice2" id="showDContractPrice2" value="฿<?php echo number_format($this->post->checkPost('DContractPrice2'),0,'.',',');?>" onclick="this.value=''" onchange="changeFormat('showDContractPrice2','DContractPrice2');">
+                  </div>
+                  <div class="col-md-4">
+                   <p>วันที่ ถ้ามี</p>
+                   <input class="form-control input-md" type="text" name="DContractDate2" id="DContractDate2" onblur="setTimeout(function(){updatePost('DContractDate2')}, 500);" value="<?php echo $this->post->checkPost('DContractDate2');?>">
+                  </div>
+                  <div class="col-md-4">
+                   <p>สถานะการชำระ ถ้ามี</p>
+                   <select class="form-control input-md" name="DContractStatus2" id="DContractStatus2" onchange="updatePost('DContractStatus2');">
+                          <option value="1" <?php if ($this->post->checkPost('DContractStatus2')==1){echo "selected";};?>>ชำระแล้ว</option>
+                          <option value="0" <?php if ($this->post->checkPost('DContractStatus2')==0){echo "selected";};?>>ยังไม่ชำระ</option>
+                   </select>                  
+                  </div>
+                  <div class="col-md-4">
+                   <p>ทำสัญญางวดที่ 3 (บาท)</p>
+                   <input class="form-control input-md" type="text" name="showDContractPrice3" id="showDContractPrice3" value="฿<?php echo number_format($this->post->checkPost('DContractPrice3'),0,'.',',');?>" onclick="this.value=''" onchange="changeFormat('showDContractPrice3','DContractPrice3');">
+                  </div>
+                  <div class="col-md-4">
+                   <p>วันที่ ถ้ามี</p>
+                   <input class="form-control input-md" type="text" name="DContractDate3" id="DContractDate3" onblur="setTimeout(function(){updatePost('DContractDate3')}, 500);" value="<?php echo $this->post->checkPost('DContractDate3');?>">
+                  </div>
+                  <div class="col-md-4">
+                   <p>สถานะการชำระ ถ้ามี</p>
+                   <select class="form-control input-md" name="DContractStatus3" id="DContractStatus3" onchange="updatePost('DContractStatus3');">
+                          <option value="1" <?php if ($this->post->checkPost('DContractStatus3')==1){echo "selected";};?>>ชำระแล้ว</option>
+                          <option value="0" <?php if ($this->post->checkPost('DContractStatus3')==0){echo "selected";};?>>ยังไม่ชำระ</option>
+                   </select>                  
+                  </div>
+            </div>
+            <hr/>
+          
+            <div class="row">
+                  <div class="col-md-12"><h5>การผ่อนดาวน์</h5></div>
+                  <div class="col-md-4">
+                   <p>จำนวนงวดที่ผ่อนดาวน์</p>
+                   <input type="text" class="form-control input-md" name="DDownSeparatePayment" id="DDownSeparatePayment" onchange="updatePost('DDownSeparatePayment');" value="<?=$this->post->checkPost('DDownSeparatePayment')?>" >
+                  </div>
+                  <div class="col-md-4">
+                   <p>&nbsp;</p>
+				  </div>
+                  <div class="col-md-4">
+                   <p>&nbsp;</p>
+				  </div>
+			</div>
+<?php
+	$i=1;
+	$Total=$this->post->checkPost('DDownSeparatePayment');
+	while ($i<=$Total){
+?>
+            <div class="row">
+                  <div class="col-md-4">
+                   <p>ผ่อนดาวน์งวดที่ <?=$i?> (บาท)</p>
+                   <input type="text" class="form-control input-md" name="DP<?=$i?>" id="DP<?=$i?>" value="฿<?php echo number_format($this->post->checkPostDCondo('DP'.$i),0,'.',',');?>" onclick="this.value=''" onchange="updatePostDCondo('DP<?=$i?>');setTimeout(function(){changeFormat5('DP<?=$i?>')}, 100);">
+
+                  </div>
+                  <div class="col-md-4">
+                   <p>วันที่</p>
+                   <input class="form-control input-md" type="text" name="DD<?=$i?>" id="DD<?=$i?>" onblur="setTimeout(function(){updatePostDCondo('DD<?=$i?>')}, 500);">
+                  </div>
+				   <div class="col-md-4">
+                   <p>ประวัติการชำระ</p>
+                   <select class="form-control input-md" name="DH<?=$i?>" id="DH<?=$i?>" onchange="updatePostDCondo('DH<?=$i?>');">
+                          <option value="1">ชำระตรงเวลา</option>
+                          <option value="2">ชำระล่าช้าเล็กน้อย</option>
+                          <option value="3">ค้างชำระ</option>
+                   </select>                  
+                  </div>
+			</div>
+<?php
+		$i++;
+	};
+?>
+			<hr/>
+            <div class="pull-right">
+              <button type="button" class="btn btn-warning btn-sm" onclick="val1('2')" >ก่อนหน้า  </button> <button type="button" class="btn btn-warning btn-sm" onclick="val1('4')" > ถัดไป</button>
+            </div>
+
+            <div class="clearfix"></div>
+          </div>
+
+          <div class="col-md-3 col-md-push-3 property-info" style="background-image:/img/zhome-table.png">
+              <div class="text-center">
+                <h3 class="text-danger">ราคา-ค่าใช้จ่ายครบ<br/>
+    ลดความขัดแย้ง</h3>
+            
+                <div><img src="/img/progress-0.png" class="img-responsive center-block"></div>
+                <hr/>
+                <div><img src="/img/tip-of-the-day.png" class="img-responsive center-block"></div>
+                <h5>ราคาประกาศขาย</h5>
+                <div class="col-md-12">
+                    Z HOME กำหนดให้ราคาประกาศขาย
+                    เป็นราคาที่ผู้ขายรวมค่าใช้จ่ายแล้ว
+                    เพื่อลดข้อขัดแย้งภายหลัง
+                    ราคาประกาศขาย<br/><br/>
+                    *หากผู้ซื้อยินดีซื้อ ในราคาที่ท่าน
+                    กำหนด แต่ท่านขึ้นราคาหรือไม่ขาย
+                    เราขอสงวนสิทธิในการระงับประกาศ
+                    ของท่าน<br/><br/>
+                    *ประกาศของคุณจะไม่แสดงเมื่อ
+                    ครบกำหนด คุณสามารถปรับราคา
+                    หรือเวลาประกาศได้ตลอดเวลา ทาง
+                    Z HOME Application ก่อนที่จะมีคน
+                    ติดต่อท่าน เพื่อหลีกเลี่ยงการถูก
+                    ระงับประกาศ
+                  </div>
+                </div>
+            <br/>
+            <br/>
+            <br/>
+            <img src="/img/zhome-table.png" class="img-responsive center-block margin-top-237 hidden-xs ">
+          </div>
+          <aside class="col-md-2 col-md-pull-10">
+            <ul class="nav">
+              <li><a href="/zhome/changePage2/1">เริ่มต้น</a></li>
+              <li><a href="/zhome/changePage2/2">พื้นฐาน</a></li>
+              <li class="active"><a href="#">ตั้งราคา</a></li>
+              <li><a href="/zhome/changePage2/4">รูปถ่าย</a></li>
+              <li><a href="/zhome/changePage2/5">การสื่อสาร</a></li>
+              <li><a href="#">ส่วนลด</a></li>
+            </ul>
+            <div class="h360 hidden-xs"></div>
+            <div>เหลือ <span class="green">3 ขั้นตอน</span><br> เพื่อลงประกาศ</div>
+          </aside>
+          </div>
+      </div>
+    </div>

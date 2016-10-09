@@ -1,0 +1,308 @@
+<div class="container">
+        <aside class="col-md-2 hidden-xs">
+            <ul class="nav">
+              <li class="dashboard-active"><a><h4>ประกาศของคุณ</h4></a></li>
+            </ul>
+            <div class="h360 hidden-xs"></div> 
+          </aside>
+<?php	
+	if ($clist->num_rows()==0){
+?>
+          <div class="col-md-10">
+            <h3 class="text-primary">ไม่มีประกาศ</h3>
+			<hr>
+<?php
+	} else {
+?>
+          <div class="col-md-10">
+            <h3 class="text-primary">ประกาศ</h3>
+            <hr>
+<?php
+	//loop unlist detail
+	foreach ($clist->result() as $row){
+		$POID=$row->POID;
+		$Address=$row->Address;
+		$RoomNumber=$row->RoomNumber;
+		$ProjectName=$row->ProjectName;
+		$OwnerName=$row->OwnerName;
+		$Telephone=$row->Telephone1;
+		if ($Address!=null and $Address!=''){ 
+			$prefix=$Address;
+		} else {
+			$prefix=$RoomNumber;
+		};
+		$TOAdvertising=$row->TOAdvertising;
+		if ($TOAdvertising==2){
+			$Price=$row->DTotalPrice;
+			$prefixTOAdv="ขายดาวน์";
+		}
+		if ($TOAdvertising==5){
+			$Price=$row->PRentPrice;
+			$prefixTOAdv="เช่า";
+		}
+		if ($TOAdvertising==1){
+			$Price=$row->TotalPrice;
+			$prefixTOAdv="ขาย";
+		}
+		$useArea=$row->useArea;
+		$terraceArea=$row->terraceArea;
+		$sumArea=$useArea+$terraceArea;
+		if ($sumArea!=0){
+			$PricePerSq=$Price/$sumArea;
+		} else {
+			$PricePerSq=0;
+		};
+		$Token=$row->Token;
+		$Floor=$row->Floor;
+		$Bedroom=$row->Bedroom;
+		if ($Bedroom=="99"){
+			$Bedroom="ห้องสตูดิโอ";
+		} else {
+			$Bedroom=$Bedroom." นอน";
+		}
+		$NumExpire=$this->dashboard->DateExpireNum($Token);
+?>
+            
+            <div class="row">
+              <div class="col-md-4">
+                <a href="/zhome/unitDetailOwner/<?=$POID;?>" target="_bank"><img src="<?=$this->dashboard->imageList($POID)?>" class="img-responsive imgDashBoard"></a>
+              </div>
+              
+              <div class="col-md-4">
+                <div><h4 class="text-grey padding-none"><?=$prefix?><?=$ProjectName?><h4></div>
+<?php
+	$checkAdmin=$this->backend->checkAdmin();
+	if ($checkAdmin==1){
+?>
+				<div><?=$OwnerName;?> Tel:<?=$Telephone;?></div>
+<?php
+	};
+?>
+				<div class="text-grey padding-right">
+					<span>ชั้น <?=$Floor?> </span>
+					<span>&nbsp;<?=$Bedroom?></span>  
+					<span><?=$sumArea?> ตร.ม.<sup>2</sup></span> 
+				</div>
+                <br>
+                <div class="text-grey padding-top25"> <span class="glyphicon glyphicon-list-alt text-grey" aria-hidden="true"></span>  เหลือ <?=$NumExpire?> วัน 
+				<?php 
+					if ($NumExpire<30){
+				?>
+					<a class="text-blue underline" href="/zhome/AddDateExpire/<?=$Token?>">เพิ่ม 2 เดือนฟรี </a>
+				<?php
+					}
+				?>
+				</div>
+               
+              </div>
+
+              <div class="col-md-4">
+                 <div class="text-grey padding-right">
+                    <div class="pull-left w250">
+                       <div class="pull-left w50"><span><h4 class="text-grey padding-clear"><?=$prefixTOAdv?></h4></span></div>
+                       <div class="pull-left w50"><span><h4 class="text-grey padding-clear">฿ <?=number_format($Price,0,'.',',');?></h4></span></div>
+                    </div>
+                    <div class="pull-right"><span class="glyphicon glyphicon-remove input-sm text-grey2 padding-none" aria-hidden="true" onclick='if (confirm("คุณแน่ใจที่จะซ่อนประกาศนี้?")) window.location.href="/zhome/hpost/<?=$Token?>"'></span></div>
+                    <div class="clearfix"></div>
+                 </div>
+
+                 <br>
+                 <div class="text-blue padding-right padding-top43">
+                    <span class="glyphicon glyphicon-eye-open text-blue"></span>
+                    <span><?=$this->dashboard->countViewPost($POID);?></span>
+                    <span class="glyphicon glyphicon-earphone text-blue"></span>
+                    <span><?=$this->dashboard->countTelPost($POID);?></span>
+                 </div>
+                 <div><a class="text-red underline" href="#" title="ยังไม่เปิดใหัใช้งาน"><span class="glyphicon glyphicon-earphone text-blue"></span> ขายด่วน 90วัน</a>&nbsp;&nbsp;&nbsp;
+				 <a class="text-blue underline" href="/zhome/EditPost2/<?=$Token?>">แก้ไขประกาศ</a>
+                 </div>
+    				
+              </div>
+
+            
+            
+            <!--end col md4-->
+            </div>
+            <hr>
+<?php
+	//end loop clist detail
+	}
+?>
+            <!--end row-->
+            <br><br>
+<?php
+	};
+?>
+<?php	
+	if ($unlist->num_rows()>0){
+?>
+             <h3 class="text-warning">รอประกาศ</h3>
+            <hr>
+<?php
+	$attributes = array('class' => 'email', 'id' => 'EditPost');
+	echo form_open('/zhome/EditPost', $attributes);
+?>
+	<input type="hidden" name="Token" id="Token">
+<?php
+	//loop unlist detail
+	foreach ($unlist->result() as $row){
+		$POID=$row->POID;
+		if ($row->Active=="3"){
+			$Msg=$this->dashboard->checkMsg($POID);
+		} else {
+			$Msg="";
+		};
+		$Address=$row->Address;
+		$RoomNumber=$row->RoomNumber;
+		$ProjectName=$row->ProjectName;
+		$OwnerName=$row->OwnerName;
+		$Telephone=$row->Telephone1;
+		$Active=$row->Active;
+		if ($Address!=null and $Address!=''){ 
+			$prefix=$Address;
+		} else {
+			$prefix=$RoomNumber;
+		};
+		$TOAdvertising=$row->TOAdvertising;
+		if ($TOAdvertising==2){
+			$Price=$row->DTotalPrice;
+			$prefixTOAdv="ขายดาวน์";
+		};
+		if ($TOAdvertising==5){
+			$Price=$row->PRentPrice;
+			$prefixTOAdv="เช่า";
+		};
+		if ($TOAdvertising==1){
+			$Price=$row->TotalPrice;
+			$prefixTOAdv="ขาย";
+		}
+		$useArea=$row->useArea;
+		$terraceArea=$row->terraceArea;
+		$sumArea=$useArea+$terraceArea;
+		if ($sumArea!=0){
+			$PricePerSq=$Price/$sumArea;
+		} else {
+			$PricePerSq=0;
+		};
+		$Token=$row->Token;
+		$wStep=5-($row->Step1)-($row->Step2)-($row->Step3)-($row->Step4)-($row->Step5);
+		$Floor=$row->Floor;
+		$Bedroom=$row->Bedroom;
+		if ($Bedroom=="99"){
+			$Bedroom="ห้องสตูดิโอ";
+		} else {
+			$Bedroom=$Bedroom." นอน";
+		}
+		$NumExpire=$this->dashboard->DateExpireNum($Token);
+
+?>
+            <div class="row">
+              <div class="col-md-4">
+                <a href="/zhome/unitDetailOwner/<?=$POID;?>" target="_bank"><img  height="90px" src="<?=$this->dashboard->imageList($POID)?>" class="img-responsive imgDashBoard"></a>
+              </div>
+              
+              <div class="col-md-4">
+                <div><h4 class="text-grey padding-none"><?=$prefix?><?=$ProjectName?></h4><?if ($Active=="91"){ echo "<br>(ประกาศถูกซ่อน)";};?></div>
+<?php
+	$checkAdmin=$this->backend->checkAdmin();
+	if ($checkAdmin==1){
+?>		
+				<div><?=$OwnerName;?> Tel:<?=$Telephone;?></div>
+<?php
+	}
+?>
+				<div class="text-grey padding-right">
+					<span>ชั้น <?=$Floor?> </span>
+					<span>&nbsp;<?=$Bedroom?></span>  
+					<span><?=$sumArea?> ตร.ม.<sup>2</sup></span> 
+				</div>
+				<br>
+				<div class="padding-top32"><strong><font color="red"><?=$Msg;?></font></strong></div>
+                 <?php
+					
+						if ($wStep ="0"){?>
+                         <div><strong><font color="red">รอการตรวจสอบข้อมูลจากทีมงาน</font></strong></div>
+                                 <?php }
+				 ?>
+
+
+              </div>
+
+              <div class="col-md-4">
+                 <div class="text-grey padding-right">
+                    <div class="pull-left w250">
+                        <div class="pull-left w50"><span><h4 class="text-grey padding-clear"><?=$prefixTOAdv?></h4></span></div>
+                        <div class="pull-left w50"><span><h4 class="text-grey padding-clear">฿ <?=number_format($Price,0,'.',',');?></h4></span></div>
+                    </div>
+                    <div class="pull-right"><span class="glyphicon glyphicon-remove input-sm text-grey2 padding-none" aria-hidden="true" onclick='if (confirm("คุณแน่ใจที่จะลบประกาศนี้?")) window.location.href="/zhome/dpost/<?=$Token?>"'></span></div>
+
+                 </div>
+                
+
+             
+                 <br>
+                 
+					 <?php
+					if ($Active!=91){
+						if ($wStep!="0"){
+					  ?>
+
+	                 <div class="text-grey pull-right col-md-12 padding-right-clear padding-left-clear padding-top72">
+	                 	<button type="button" class="btn btn-green2 btn-dash pull-right" onclick='document.getElementById("Token").value="<?=$Token?>";document.getElementById("EditPost").submit();'> เหลือ <?=$wStep;?> ขั้นตอน</button>
+					 </div>
+					 <?php
+						} else {
+					 ?>
+					 <div class="text-grey pull-right col-md-12 padding-right-clear padding-left-clear padding-top72">
+					   <button type="button" class="btn btn-green2 btn-dash pull-right"  onclick='document.getElementById("Token").value="<?=$Token?>";document.getElementById("EditPost").submit();'>แก้ไขประกาศ</button>
+					 </div>
+					 <?php
+					  };
+					  } else {
+					 ?>
+					 <!--<div class="text-grey pull-right col-md-12 padding-right-clear padding-left-clear">
+					   <button type="button" class="btn btn-green2 btn-dash pull-right"  onclick='if (confirm("คุณแน่ใจที่จะเลิกซ่อนประกาศนี้?")) window.location.href="/zhome/unhpost/<?=$Token?>"'>ยกเลิกซ่อนประกาศ</button>
+					 </div>-->
+					 <?php
+					  };
+					 ?>
+
+<?php
+	if ($Active==0){
+?>
+    				<div class="text-grey padding-right"><br>
+					
+					</div>
+<?php
+	};
+?>
+<?php
+	if ($Active==91){
+?>
+    				<!--<div class="text-grey pull-right">
+						<button type="button" class="btn btn-blue btn-dash"  onclick='if (confirm("คุณแน่ใจที่จะลบประกาศเนื่องจากตกลงการขายได้หรือมีผู้เช่าแล้ว?")) window.location.href="/zhome/epost/<?=$Token?>"'>
+							ลบประกาศ (ขายได้/มีผู้เช่าแล้ว)
+						</button>
+					</div>-->
+<?php
+	};
+?>
+			  </div>
+			  
+
+            <!--end col md4-->
+            </div>
+            <hr>
+<?php
+	//end loop unlist detail
+	}
+?>
+            <br>
+<?php
+	//end loop unlist
+	};
+?>
+</form>
+
+  </div>
+</div>

@@ -1,0 +1,47 @@
+<?php echo $map['html']; ?>
+<br>
+<br>
+<?php
+$row=$query->row();
+echo form_open('/zhome/editProject2');
+?>
+<input type="hidden" id="PID" name="PID" value="<?=$row->PID;?>">
+<Table align="center">
+<tr>
+	<td align="Right">&nbsp;ชื่อไทย:&nbsp;</td><td align="left"><input type="text" id="PName_th"  Name="PName_th" size="50" value="<?=$row->PName_th;?>"></td>
+	<td align="Right">&nbsp;ชื่อ English:&nbsp;</td><td align="left"><input type="text" id="PName_en" name="PName_en"  size="50" value="<?=$row->PName_en;?>"></td>
+</tr>
+<tr>
+	<td align="Right">&nbsp;Lat:&nbsp;</td><td align="left"><input type="text" id="Lat" name="Lat"  size="50" value="<?=$row->Lat;?>"></td>
+	<td align="Right">&nbsp;Lat:&nbsp;</td><td align="left"><input type="text" id="Lng" name="Lng"  size="50" value="<?=$row->Lng;?>"></td>
+</tr>
+<tr>
+	<td align="Right">&nbsp;ซอย:&nbsp;</td><td align="left"><input type="text" id="Soi" name="Soi" size="50" value="<?=$row->Soi;?>"></td>
+	<td align="Right">&nbsp;ถนน:&nbsp;</td><td align="left"><input type="text" id="Road" name="Road" size="50" value="<?=$row->Road;?>"></td>		
+</tr>
+<tr>
+	<td align="Right">&nbsp;แขวง:&nbsp;</td><td align="left"><input type="text" id="District" name="District" size="50" value="<?=$row->District;?>"></td>
+	<td align="Right">&nbsp;เขต:&nbsp;</td><td align="left"><input type="text" id="Area" name="Area" size="50" value="<?=$row->Area;?>"></td>			
+</tr>
+<tr>
+	<td align="Right">&nbsp;จังหวัด:&nbsp;</td><td align="left"><input type="text" id="Province" name="Province" size="50" value="<?=$row->Province;?>"></td>
+	<td align="Right">&nbsp;Zip code:&nbsp;</td><td align="left"><input type="text" id="Zipcode" name="Zipcode" size="50" value="<?=$row->Zipcode;?>"></td>				
+</tr>
+<tr>
+	<td align="Right">&nbsp;ปีที่สร้างเสร็จ:&nbsp;</td><td align="left"><input type="text" id="YearEnd" name="YearEnd" size="50" value="<?=$row->YearEnd;?>"></td>
+	<td align="Right">&nbsp;จำนวนยูนิต:&nbsp;</td><td align="left"><input type="text" id="CondoUnit" name="CondoUnit" size="50" value="<?=$row->CondoUnit;?>"></td>				
+</tr>
+<tr>
+	<td align="Right">&nbsp;จำนวนที่จอดรถ:&nbsp;</td><td align="left"><input type="text" id="CarParkUnit" name="CarParkUnit" size="50" value="<?=$row->CarParkUnit;?>"></td>
+	<td align="Right">&nbsp;ค่าส่วนกลางต่อ ตร.ม.:&nbsp;</td><td align="left"><input type="text" id="CamFee" name="CamFee" size="50" value="<?=$row->CamFee;?>"></td>				
+</tr>
+</Table>
+<br>
+<div align="center"><input type="submit" value="Edit Project"></div>
+</form>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>

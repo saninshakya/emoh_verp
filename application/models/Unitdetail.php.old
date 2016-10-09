@@ -1,0 +1,112 @@
+<?php
+class Unitdetail extends CI_Model {
+ 
+    function __construct()
+     {
+         // Call the Model constructor
+         parent::__construct();
+     }
+
+	function getUnitFromPOID($POID){
+		$queryUnit=$this->db->query('Select *, DATEDIFF(CURDATE(), DateCreate) as DateShow from Post Where POID="'.$POID.'"');
+		return $queryUnit;
+	}
+
+	function getProjectFromPOID($POID){
+		$queryPID=$this->db->query('Select PID from Post Where POID="'.$POID.'"');
+		$PID=$queryPID->row()->PID;
+		if ($PID!=null && $PID!=0){
+			$queryProject=$this->db->query('Select * from Project Where PID="'.$PID.'"');
+			return $queryProject;
+		} else {
+			return null;
+		}
+	}
+
+	function getAllPostFromPIDandTOAdvertising($PID,$TOAdvertising,$Active,$PName_th){
+		if ($Active==0){
+			$queryAllPost=$this->db->query('Select *, DATEDIFF(CURDATE(), DateCreate) as DateShow from Post Where (Active="0" or Active="1") and PID="'.$PID.'" and ProjectName="'.$PName_th.'" and TOAdvertising="'.$TOAdvertising.'" order by Floor');
+//			echo 'Select *, DATEDIFF(CURDATE(), DateCreate) as DateShow from Post Where (Active="0" or Active="1") and PID="'.$PID.'" and ProjectName="'.$PName_th.'" and TOAdvertising="'.$TOAdvertising.'" order by Floor';
+		} else {
+			$queryAllPost=$this->db->query('Select *, DATEDIFF(CURDATE(), DateCreate) as DateShow from Post Where Active="1" and PID="'.$PID.'" and ProjectName="'.$PName_th.'" and TOAdvertising="'.$TOAdvertising.'" order by Floor');
+		}
+		return $queryAllPost;
+	}
+
+	function convertDirection($Direction){
+		$query=$this->db->query('Select DNameEn from Direction Where DID="'.$Direction.'"');
+		$row=$query->row();
+		return $row->DNameEn;
+	}
+
+	function viewTel($POID){
+		$user_id=$this->session->userdata('user_id');
+		$ThisDate=date("Y-m-d 00:00:00");
+		$query=$this->db->query('select * from LogViewPost Where POID="'.$POID.'" and ViewTelByUserID="'.$user_id.'"');
+		$checkAdmin=$this->backend->checkAdmin();
+		if ($checkAdmin==1){
+			$CheckHaveView=1;
+			$canView=1;
+		} else {
+			if ($query->num_rows() == 0){
+				$CheckHaveView=0;
+			} else {
+				$CheckHaveView=1;
+				$canView=1;
+			};
+			if ($CheckHaveView==0){
+				$query=$this->db->query('select * from LogViewPost Where ViewTelByUserID="'.$user_id.'" and LastUpdate>"'.$ThisDate.'"');
+				if ($query->num_rows() > 0){
+					$query5=$this->db->query('select * from add_view_facebook Where user_id="'.$user_id.'"');
+					if ($query5->num_rows()>0){
+						$row5=$query5->row();
+						$view=$row5->view;
+						if ($view>0){
+							$canView=1;
+							$newView=$view-1;
+							$this->db->query('update add_view_facebook set view="'.$newView.'" where user_id="'.$user_id.'"');
+						} else {
+							$canView=0;
+						}
+					} else {
+						$canView=0;
+					};
+				} else {
+					$canView=1;
+				};
+			};
+		};
+		if ($canView==1){
+			$query=$this->db->query('Select * from Post Where POID="'.$POID.'"');
+			$row=$query->row();
+			$Telephone=$row->Telephone1;
+			if ($CheckHaveView==0){
+				$date=date("Y-m-d H:i:s");
+				$this->db->query('update LogViewPost set ViewTelByUserID="'.$user_id.'" , LastUpdate="'.$date.'" Where POID="'.$POID.'" and ViewByUserID="'.$user_id.'"');
+				//$Telephone = 'update LogViewPost set ViewTelByUserID="'.$user_id.'" , LastUpdate="'.$date.'" Where POID="'.$POID.'" and ViewByUserID="'.$user_id.'"';
+			};
+		} else {
+			$Telephone="คุณใช้สิทธ์ดูเบอร์โทรหมดแล้ว";
+		}
+		return $Telephone;
+
+	}
+
+	function add_view_facebook(){
+		$user_id=$this->session->userdata('user_id');
+		$ThisDate=date("Y-m-d");
+		$query=$this->db->query('select * from add_view_facebook Where user_id="'.$user_id.'"');
+		if ($query->num_rows()>0){
+			$row=$query->row();
+			$view=$row->view;
+			$last_update=$row->last_update;
+			if (($last_update!=$ThisDate) && ($view<10)) {
+				$newView=$view+1;
+				$this->db->query('update add_view_facebook set view="'.$newView.'", last_update="'.$ThisDate.'" Where user_id="'.$user_id.'"');
+			}
+		} else {
+			$this->db->query('insert into add_view_facebook set user_id="'.$user_id.'", view=1, last_update="'.$ThisDate.'"');
+		}
+	}
+
+}

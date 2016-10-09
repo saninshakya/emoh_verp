@@ -1,0 +1,288 @@
+<?php
+$POID=$rowUnit->POID;
+$PID=$rowUnit->PID;
+$PName_th=$rowUnit->ProjectName;
+$TOAdvertising=$rowUnit->TOAdvertising;
+$TOProperty=$rowUnit->TOProperty;
+$RefID="(ID".$TOProperty.$TOAdvertising."-".$POID.")";
+$Active=$rowUnit->Active;
+$queryAllPost=$this->unitdetail->getAllPostFromPIDandTOAdvertising($PID,$TOAdvertising,$Active,$PName_th);
+$arrayList=$this->search->selectCountingList($POID,$PID);
+
+$CountViewList=$this->search->ContViewList($POID);
+$CountSoldPerMonth=$this->search->CountSoldPerMonth($PID);
+
+$useArea=$rowUnit->useArea;
+$terraceArea=$rowUnit->terraceArea;
+$sumArea=$useArea+$terraceArea;
+$Direction=$this->search->KeyDirection($rowUnit->Direction);
+$PRentStatus=-1;
+$PRentTxt="";
+$TaxTxt="";
+
+if ($rowUnit->TOAdvertising==1){//sale
+	$TotalPrice=$rowUnit->TotalPrice;
+}
+if ($rowUnit->TOAdvertising==2){//down
+	$TotalPrice=$rowUnit->DTotalPrice;
+	//$TaxTxt=" +ค่าโอน-ภาษี ฿350,000-450,000";
+	$TaxTxt="NA";
+}
+if ($rowUnit->TOAdvertising==5){//rent
+	$TotalPrice=$rowUnit->PRentPrice;
+	$PRentStatus=$rowUnit->StatusPRent;
+}
+
+if ($PRentStatus==0){
+	$PRentTxt="ว่าง";
+}else if($PRentStatus!=-1){
+	$PRentTxt="ว่างหลัง ".$rowUnit->PRentEnd."";
+	//$PRentTxt="มีผู้เช่า ฿35,000/ด. ";
+}
+$TotalPrice2=$TotalPrice;
+$TotalPrice=number_format($TotalPrice, 0,'',',');
+$problem_type="";
+?>
+<input type=hidden id="poid" name="poid" value="<?php echo $POID; ?>">
+<hr class="border-top-grey">
+<div class="container-fluid clear-margin-padding">
+	<div class="row">  
+	  <div class="col-md-12">
+		   <ul class="list-inline">
+			  <li><h3 class="text-primary padding-left-20"><?=$rowUnit->ProjectName;?>&nbsp;<?=$RefID;?></h3></li>
+			  <li><span class="glyphicon glyphicon glyphicon-star text-primary" aria-hidden="true"></span></li>
+		   </ul>
+	  </div>
+	</div>
+	<div class="row display-none">
+	  <div class="col-md-3 col-xs-3 text-primary"><?=$arrayList[0];?> จาก <?=$arrayList[1];?> ในรายการ</div>
+	  <div class="col-md-3 col-xs-3 text-primary">กำลังต่อรองอยู่ <?=$CountViewList;?> ราย</div>
+	  <div class="col-md-3 col-xs-3 text-primary"><?=$CountSoldPerMonth;?> Sold/Moth</div>
+	  <div class="col-md-3 col-xs-3 text-primary">&nbsp;</div>
+	</div>
+	
+	
+	<div class="col-md-12 border-img">
+		<span class="glyphicon glyphicon-menu-left btn-back-img" id="backImg"></span>
+		<span class="glyphicon glyphicon-menu-right btn-next-img" id="nextImg"></span>
+		<img class="img-responsive unit-fixsize" src="<?php if (sizeof($Img)!=0){ echo $Img[0];};?>" id="imgHUnit">
+	</div>
+	
+	<!--start move-->
+	
+	<div class="col-md-3 col-md-offset-1 col-md-push-7">
+		<br/>
+		<div class="row border-grey2">
+			<div class="col-md-12 min-height2">
+				<ul class="list-inline2 pull-right padding-none margin-r18">
+					<li class="text-primary padding-none"><?=$rowUnit->DateShow;?> </li>
+					<li class="padding-none"><a href="#"><img src="/img/sun-icon2.png"></a></li>
+					<li class="text-primary padding-none"> <?=$CountViewList;?></li>
+					<li class="text-primary"><a href="#"><span style="padding-bottom: 5px;" class="glyphicon glyphicon-earphone text-primary fix-glyphicon input-sm3"></span></a></li>
+				</ul>
+				<div class="clearfix2"></div>
+			</div>
+			<div class="col-md-12 bg-box-grey">
+				<div class="col-md-12">
+					<div>
+						<div class="pull-left w60 padding-r5">
+							<div class="pull-left text-white" style="height:35px;"><h2 class="text-white padding-none margin-left4 text-left">฿<?=$TotalPrice;?></h2></div>
+							<div class="clearfix"></div>
+							<div class="pull-left text-white"><h6 class="text-right resize-mobile"><?=$TaxTxt;?></h6></div>
+						</div>
+						<div class="pull-left padding-r5">
+							<div class="pull-left text-white" style="height:35px;"><h8 class="text-right">฿ <?=number_format($rowUnit->PricePerSq, 0,'',',');?>/ม<sup>2</sup></h8></div>
+							<div class="clearfix"></div>
+							<div class="pull-left text-white"><h6 class="text-right resize-mobile"><?=$PRentTxt;?></h6></div>
+						</div>
+					</div>
+					<div class="clearfix"></div>
+					<hr class="text-white padding-none2">
+					<div class=" padding-top4"></div>
+					<div>
+						<div class="pull-left w14 padding-r5">
+							<div class="pull-right text-white"><h6>นอน</h6></div>
+							<div class="clearfix"></div>
+							<div class="pull-right h7 text-white">
+							<?php
+							  if ($rowUnit->Bedroom=="99"){
+								echo "S";
+							  } else {
+								echo $rowUnit->Bedroom;
+							  }
+							?>  
+							</div>
+						</div>
+
+						<div class="pull-left w36">
+							<div class="pull-left border-left padding-l5">
+								<div><h6 class="text-white">น้ำ</h6></div>
+								<div class="h7 text-white"><?=$rowUnit->Bathroom;?></div>
+							</div>
+							<div class="pull-right padding-r5">
+								<div class="pull-right text-white"><h6>ตร.ม.</h6></div>
+								<div class="h7 text-white"><?=$sumArea;?></div>
+							</div>
+						</div>
+						<div class="pull-left w34">
+							<div class="pull-left border-left padding-l5">
+								<div><h6 class="text-white">ชั้น</h6></div>
+								<div class="h7 text-white"><?=$rowUnit->Floor;?></div>
+							</div>
+							<div class="pull-right padding-r5">
+								<div class="pull-right text-white"><h6>ทิศ</h6></div>
+								<div class="h7 text-white"><?=$Direction;?></div>
+							</div>
+						</div>
+						<div class="pull-left border-left padding-l5 w12">
+							<div><h6 class="text-white">ตัวแทน</h6></div>
+							<div class="h7 text-white">
+								<span class="glyphicon padding-left-clear input-sm <?php if($rowUnit->TOOwner=='1'){echo 'glyphicon-remove';}else{echo 'glyphicon-ok';}?>" aria-hidden="true" style="font-size:17px;"></span>
+							</div>
+						</div>
+					</div>
+					<div class="clearfix padding-bottom2"></div>
+				</div><!--end -padding-->
+			</div>
+
+			<div class="clearfix"></div>
+			<br>
+
+			<div class="col-md-1"></div>
+			<div class="col-md-10 bg-blue text-white text-center padding-top2"><input type="hidden" id="otel" value="">
+				<h5 class="text-white">โทรหาเจ้าของ</h5>
+		  
+				<!--revised 9oct58-->
+				<ul class="list-inline">
+					<li class="clear-none"><span class="glyphicon glyphicon-earphone text-white input-md clear-none"></span></li>
+					<li><h7 class="text-white"><a id="down-b1" class="text-white" style="cursor:pointer;">099-XXX-XXX</a></h7></li>
+				</ul>
+			
+				<div class="display-none col-md-12 target-b2 text-white text-center">
+					<div>คุณใช้โควต้าของวันนี้แล้ว</div>
+					<div>แชร์ ZmyHome เพื่อดูเพิ่มวันนี้อีก 1 ครั้ง</div>
+					<div class="padding-top2"><button type="button" class="btn btn-warning btn-sm" onclick="shareOnFacebook();"><h6><a href="#" onclick="" class"text-white">facebook </a></h6></button>
+					</div>
+					<div id="fb-root"></div>
+						<script>
+						window.fbAsyncInit = function() {
+						  FB.init({
+							//appId                : "417656831761780",
+							//appId                : "1635586383372949",
+							appId                : "<?=$facebook_id;?>",
+							status               : true, // check login status
+							cookie               : true, // enable cookies to allow the server to access the session
+							xfbml                : false,  // parse XFBML
+							perms                : 'read_stream',
+							access_token         : "USER ACCESS TOkEN",
+							frictionlessRequests : true
+						  });
+						};
+
+						// Load the SDK Asynchronously
+						(function(d, s, id) {
+						  var js, fjs = d.getElementsByTagName(s)[0];
+						  if (d.getElementById(id)) return;
+						  js = d.createElement(s); js.id = id;
+						  js.src = "//connect.facebook.net/pt_BR/all.js";
+						  fjs.parentNode.insertBefore(js, fjs);
+						}(document, 'script', 'facebook-jssdk'));
+						</script>
+
+					<div>เพื่อดูเพิ่มวันนี้อีกครัง</div>
+					<br>
+				</div>
+				<div class="display-none col-md-12 target-b1 text-white text-center">
+					<div>ดูเบอร์ติดต่อได้ฟรีวันนี้ 1 ครั้ง</div>
+					<div class="clearfix"></div>
+					<ul class="list-inline">
+						<li><button type="button" class="btn btn-white btn-xs"><h6><a id="up-b1"  href="#" class="text-white" onclick="return false;">ยกเลิก</a></h6></button></li>
+						<li><button type="button" class="btn btn-warning btn-xs"><h6><a id="down-b2" href="#" onclick="return false;">ยืนยัน</a></h6></button></li>
+					</ul>
+					<div class="clearfix"></div><br>
+				</div>
+			</div>
+	   
+			<!--End 9oct58-->
+			<div class="col-md-1"></div> 
+			<div class="col-md-12 text-center padding-top1">
+				<div class="text-primary">แจ้ง! : 
+				<?php
+				foreach ($qProblem->result() as $row)
+				{
+					echo '<a class="text-primary" href="#" style="padding-left:7px;" data-toggle="modal" data-target="#myModal" onclick="send_problem('.$row->id.')">'.$row->name_th.'</a>';
+				}
+				?>
+				<!--<a class="text-primary" href="#" data-toggle="modal" data-target="#myModal"> ไม่ใช่เจ้าของ</a> <a class="text-primary" data-toggle="modal" data-target="#myModal" style="padding-left:7px;" href="#">  ขายแล้ว</a> <a class="text-primary" data-toggle="modal" data-target="#myModal" href="#" style="padding-left:7px;">  ขึ้นราคา</a> <a class="text-primary" data-toggle="modal" data-target="#myModal" href="#" style="padding-left:7px;">  ข้อมูลผิด</a>-->
+				</div>
+			</div>
+			<div class="clearfix"></div><br>
+		</div>
+		<div class="clearfix"></div>
+		<!--Alert-->
+		<!-- Button trigger modal -->
+		
+
+		<!-- Modal -->
+		<div class="modal modal-sm fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header bg-blue">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="text-white padding-none text-center" id="myModalLabel">แจ้งประกาศไม่มีคุณภาพ</h4>
+					</div>
+					<div class="modal-body text-grey row">
+						<div class="col-md-12">เราพยายามตรวจสอบคุณภาพประกาศเสมอ<br>ขอบคุณที่ร่วมพัฒนาชุมชนของเรา</div>
+						<div class="clearfix"></div>
+						<br>
+						<div class="col-md-12"><input id="pfullname" name="informer_name" class="form-control" placeholder="ชื่อ-สกุล" style="width:250px;" value="<?=$fullname;?>"></div>
+						<div class="clearfix"></div>
+				  
+						<div class="col-md-12 padding-top10"><input id="pemail" name="informer_email" class="form-control" placeholder="อีเมล" style="width:250px;" value="<?=$email;?>"></div>
+						<div class="clearfix"></div>
+						<div class="col-md-12 padding-top10"><input id="ptelphone" name="informer_telphone" class="form-control" placeholder="เบอร์ติดต่อ" style="width:250px;"></div>
+
+						<div class="clearfix"></div>
+				  
+						<div class="col-md-12 padding-top10">
+							<select id="ptype" name="problem_type" class="input-md form-control text-grey" style="width:250px;">
+								<option value="" class="text-grey">กรุณาระบุ</option>
+							<?php
+								foreach ($qProblem->result() as $row)
+								{
+									if ($problem_type==$row->id){
+										$sel="selected";
+									} else {
+										$sel="";
+									}
+									echo '<option value="'.$row->id.'" class="text-grey" '.$sel.'>'.$row->name_th.'</option>';
+								}
+							?>
+							</select>
+						</div>
+						<div class="clearfix"></div>
+						<div class="col-md-12 padding-top10"><textarea id="pdetail" name="problem_detail" class="form-control" placeholder="คุณทราบได้อย่างไร" rows="3" style="width:250px;"></textarea></div>
+						<div class="clearfix"></div>
+						<br>
+						<div id="ckproblem" class="col-md-12" style="display:none;"><div class="text-red">กรุณากรอกข้อมูลให้ครบถ้วน</div></div>
+				   
+						<div class="clearfix"></div>
+						<div class="col-md-12 padding-top10"><button type="button" class="btn btn-orange" style="width:250px;" onclick="submitFormHelpdesk()">แจ้งประกาศ</button></div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!--EndAlert-->
+		<br>
+		<div class="row border-grey2 text-grey"><br>
+			<div class="col-xs-6 text-center"><a class="text-grey" href="#"><span class="glyphicon glyphicon-heart text-grey"></span> รายการสนใจ<a/><br></div> 
+			<div class="col-xs-6 text-center"><a class="text-grey" href="#">แจ้งลดราคา</a><br></div> 
+			<br><br>
+			<div class="col-xs-4 text-grey text-center border-top padding-top3"><a href="#"><span class="glyphicon glyphicon-envelope text-grey"></span></a></div>
+			<div class="col-xs-4 text-grey text-center border-left border-top padding-top3"><a class="text-grey" href="#" onclick="shareOnFacebook();">Facebook</a></div>
+			<div class="col-xs-4 text-grey text-center border-left border-top padding-top3"><a class="text-grey" href="#">อื่นๆ..</a></div>
+			
+			<br>
+		</div>
+	</div>
+	<!--end move-->

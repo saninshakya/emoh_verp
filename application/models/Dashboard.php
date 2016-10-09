@@ -1,0 +1,357 @@
+<?php
+class Dashboard extends CI_Model {
+
+    function __construct()
+     {
+         // Call the Model constructor
+         parent::__construct();
+     }
+
+	function check_unlist()
+	{
+		$user_id=$this->session->userdata('user_id');
+		$query=$this->db->query('select * from Post Where user_id="'.$user_id.'" and (Active=0 or Active=3)');
+		return $query;
+	}
+
+	function check_list()
+	{
+		$user_id=$this->session->userdata('user_id');
+		$this->db->query('update Post set DateExpire=DATE_ADD(DateCreate,INTERVAL AgreePostDay Day) Where user_id="'.$user_id.'" and DateExpire is null');
+		$query=$this->db->query('select * from Post Where user_id="'.$user_id.'" and (Active=1 or Active=92)');
+		return $query;
+	}
+
+	function imageList($POID)
+	{
+		$query=$this->db->query('select file from ImagePost Where POID="'.$POID.'" Order By field(type,"room","view","facilities"),Horizental DESC,Order_Sort ASC,ImgID ASC limit 1');
+		if ($query->num_rows() > 0){
+			$row=$query->row();
+			$file=$row->file;
+		} else {
+			$file="/projImg/no-icon.gif";
+		}
+		return $file;
+	}
+
+	function DateExpireNum($Token)
+	{
+		$query=$this->db->query('Select DATEDIFF(DateExpire,CURDATE()) as NumDate from Post Where Token="'.$Token.'"');
+		$row=$query->row();
+		return $row->NumDate;
+	}
+	 function AddDateExpire($Token,$Day)
+	{
+		$ThisDay=date("Y-m-d",mktime(0, 0, 0, date("m")  , date("d"), date("Y")));
+		$query=$this->db->query('Select POID from Post Where Token="'.$Token.'" and DateExpire<"'.$ThisDay.'"');
+		$chk_row=$query->num_rows();
+		if ($chk_row!=0){
+			$Date=date("Y-m-d",mktime(0, 0, 0, date("m")  , date("d")+$Day, date("Y")));
+			$this->db->query('Update Post set  DateExpire="'.$Date.'", Active=1 Where Token="'.$Token.'"');
+		} else {
+			$this->db->query('Update Post set  DateExpire=DATE_ADD(DateExpire, INTERVAL '.$Day.' DAY) Where Token="'.$Token.'"');
+		}
+	}
+
+	function checkMsg($POID)
+	{
+		$query=$this->db->query('Select Msg from BlockPostMsg Where POID="'.$POID.'"');
+		if ($query->num_rows() >0){
+			$row=$query->row();
+			$Msg=$row->Msg;
+		} else {
+			$Msg="";
+		}
+		return $Msg;
+	}
+
+	function checkMsg2($POID)
+	{
+		$query=$this->db->query('Select Msg2 from BlockPostMsg Where POID="'.$POID.'"');
+		if ($query->num_rows() >0){
+			$row=$query->row();
+			$Msg=$row->Msg2;
+		} else {
+			$Msg="";
+		}
+		return $Msg;
+	}
+	
+	function checkMsg3($POID)
+	{
+		$query=$this->db->query('Select Msg3 from BlockPostMsg Where POID="'.$POID.'"');
+		if ($query->num_rows() >0){
+			$row=$query->row();
+			$Msg=$row->Msg3;
+		} else {
+			$Msg="";
+		}
+		return $Msg;
+	}
+
+	function countViewPost($POID)
+	{
+		$query=$this->db->query('Select ID from LogViewPost Where POID="'.$POID.'"');
+		return $query->num_rows();
+	}
+
+	function countTelPost($POID)
+	{
+		$query=$this->db->query('Select Active from Post Where POID="'.$POID.'"');
+		$row=$query->row();
+		$Active=$row->Active;
+		if ($Active==81){
+			$query=$this->db->query('Select DATE_FORMAT(CloseDate,"%m/%y") as CDate from Post Where POID="'.$POID.'"');
+			$row2=$query->row();
+			$txt="<small><font class='text-red'>RENT ".$row2->CDate."</font></small>";
+		} else {
+		if ($Active==82){
+			$query=$this->db->query('Select DATE_FORMAT(CloseDate,"%m/%y") as CDate from Post Where POID="'.$POID.'"');
+			$row2=$query->row();
+			$txt="<small><font class='text-red'>SOLD ".$row2->CDate."</font></small>";
+		} else {
+			$query=$this->db->query('Select ID from LogViewPost Where POID="'.$POID.'" and ViewTelByUserID is not null');
+			$txt=$query->num_rows();
+
+		}
+
+		}
+		return $txt;
+	}
+
+	function DelPost($Token)
+	{
+		$user_id=$this->session->userdata('user_id');
+		$query=$this->db->query('Update Post set Active="91" Where user_id="'.$user_id.'" and Token="'.$Token.'"');
+	}
+
+	function HiddenPost($Token)
+	{
+		$user_id=$this->session->userdata('user_id');
+		$query=$this->db->query('Update Post set Active="93" Where user_id="'.$user_id.'" and Token="'.$Token.'" and Active=1');
+	}
+
+	function UnHiddenPost($Token)
+	{
+		$user_id=$this->session->userdata('user_id');
+		$NumExpire=$this->DateExpireNum($Token);
+		if ($NumExpire>60){
+			$query=$this->db->query('Update Post set Active="1" Where user_id="'.$user_id.'" and Token="'.$Token.'"');
+		} else {
+			$Date=date("Y-m-d",mktime(0, 0, 0, date("m")  , date("d")+60, date("Y")));
+			$query=$this->db->query('Update Post set Active="1", DateExpire="'.$Date.'" Where user_id="'.$user_id.'" and Token="'.$Token.'"');
+		}
+
+	}
+
+	function EndPost($Token)
+	{
+		$user_id=$this->session->userdata('user_id');
+		$query=$this->db->query('Update Post set Active="99" Where user_id="'.$user_id.'" and Token="'.$Token.'"');
+	}
+
+	function ListPostType1($user_id)
+	{
+		$query=$this->db->query('Select * from Post Where TOAdvertising=1 and user_id="'.$user_id.'" and ApproveDate<>"0000-00-00" and Active IN (1,82,92,93) Order By field(Active,1,93,92,82)');
+		return $query;
+	}
+
+	function ListPostType2($user_id)
+	{
+		$query=$this->db->query('Select * from Post Where TOAdvertising=2 and user_id="'.$user_id.'" and ApproveDate<>"0000-00-00" and Active IN (1,82,92,93) Order By field(Active,1,93,92,82)');
+		return $query;
+	}
+
+	function ListPostType5($user_id)
+	{
+		$query=$this->db->query('Select * from Post Where TOAdvertising=5 and user_id="'.$user_id.'" and ApproveDate<>"0000-00-00" and Active IN (1,81,92,93) Order By field(Active,1,93,92,81)');
+		return $query;
+	}
+
+	function ListUnPost($user_id)
+	{
+		$query=$this->db->query('Select * from Post Where (Active=0 or Active=3) and user_id="'.$user_id.'"');
+		return $query;
+	}
+
+	function ListPost($user_id)
+	{
+		$query=$this->db->query('Select * from Post Where user_id="'.$user_id.'" and ApproveDate<>"0000-00-00" and Active IN (1,81,82,92,93) Order By field(TOAdvertising,1,2,5), field(Active,1,93,92,82)');
+		return $query;
+	}
+
+	function getUnitFromFavourite(){
+		$user_id=$this->session->userdata('user_id');
+		$query=$this->db->query('select * from(Select b.*,case b.TOAdvertising when "1" then b.TotalPrice when "2" then b.DTotalPrice when "5" then b.PRentPrice end as Price, DATEDIFF(CURDATE(), b.DateCreate) as DateShow,b.PricePerSq as MinPricePerSq,Count(c.ViewTelByUserID) as ViewTel from FavoriteUser a,Post b,LogViewPost c Where a.POID=b.POID and b.POID=c.POID and b.Active="1" and a.user_id="'.$user_id.'" and a.status=1 group by b.POID) a left join TOAdvertising b on a.TOAdvertising=b.TOAID order by TOProperty,TOAdvertising,ProjectName');
+		return $query;
+	}
+
+	function getUnitFromLastView(){
+		$user_id=$this->session->userdata('user_id');
+		$query=$this->db->query('select * from(Select a.ID,b.*,case b.TOAdvertising when "1" then b.TotalPrice when "2" then b.DTotalPrice when "5" then b.PRentPrice end as Price, b.PricePerSq as MinPricePerSq from (select Distinct ID,POID from LastViewUser where user_id="'.$user_id.'" order by ID DESC) a left join Post b on a.POID=b.POID where b.Active=1 group by a.POID limit 10) a left join TOAdvertising b on a.TOAdvertising=b.TOAID order by a.TOProperty,a.TOAdvertising,a.ID DESC');
+		return $query;
+	}
+
+	function closepost($Token,$Month,$Year){
+		$user_id=$this->session->userdata('user_id');
+		$query=$this->db->query('Select TOAdvertising from Post Where user_id="'.$user_id.'" and Token="'.$Token.'"');
+		$row=$query->row();
+		$TOAdvertising=$row->TOAdvertising;
+		$CloseDate=date("Y-m-d",mktime(0, 0, 0, date("m")  , date("d"), date("Y")));
+		if ($TOAdvertising==5){
+			$Date=$Year."-".$Month."-01";
+			$this->db->query('update Post set Active=81, PRentEnd="'.$Date.'", CloseDate="'.$CloseDate.'" Where user_id="'.$user_id.'" and Token="'.$Token.'"');
+		} else {
+			$this->db->query('update Post set Active=82, CloseDate="'.$CloseDate.'" Where user_id="'.$user_id.'" and Token="'.$Token.'"');
+		}
+	}
+
+	function reopenpost($Token){
+		$user_id=$this->session->userdata('user_id');
+		$NumExpire=$this->DateExpireNum($Token);
+		if ($NumExpire>60){
+			$query=$this->db->query('Update Post set Active="1" Where user_id="'.$user_id.'" and Token="'.$Token.'"');
+		} else {
+			$Date=date("Y-m-d",mktime(0, 0, 0, date("m")  , date("d")+60, date("Y")));
+			$query=$this->db->query('Update Post set Active="1", DateExpire="'.$Date.'" Where user_id="'.$user_id.'" and Token="'.$Token.'"');
+		}
+	}
+
+	function viewTelDashboard($POID){
+		$user_id=$this->session->userdata('user_id');
+		$ThisDate=date("Y-m-d 00:00:00");
+		$query=$this->db->query('select * from LogViewPost Where POID="'.$POID.'" and ViewTelByUserID="'.$user_id.'"');
+		$checkAdmin=$this->backend->checkAdmin();
+		if ($checkAdmin==1){
+			$CheckHaveView=1;
+			$canView=1;
+		} else {
+			if ($query->num_rows() == 0){
+				$CheckHaveView=0;
+			} else {
+				$CheckHaveView=1;
+			}
+		}
+		if ($CheckHaveView==1){
+			return 1;
+		} else {
+			return 0;
+		}
+	}
+
+	function qLineAlert(){
+        $this->db->query('SET NAMES utf8');
+        $this->db->query('SET character_set_results=utf8');
+        $query=$this->db->query('select id,name_th,name_en from cfg_master Where type="line_alert" and status=1 Order By sort_no');
+        return $query;
+	}
+
+	function add_LineAlert($data){
+		$user_id=$this->session->userdata('user_id');
+		$POID=$data['POID'];
+		$Alert_id=substr($data['Alert_id'],0,-1);
+		$NewAlert_id=explode(',', $Alert_id);
+		$i=sizeof($NewAlert_id);
+		$j=0;
+		$query=$this->db->query('Select id from users_alert Where user_id="'.$user_id.'" and POID="'.$POID.'" ');
+		if($query->num_rows()!=0){
+			$this->db->query('delete from users_alert where user_id="'.$user_id.'" and POID="'.$POID.'"');
+		};
+		while ($j<$i){
+			$this->db->query('insert into users_alert set user_id="'.$user_id.'",POID="'.$POID.'",Alert_id="'.$NewAlert_id[$j].'",DateCreate=now(),DateEnd=adddate(curdate(),180)');
+			$j++;
+		}
+//		$query=$this->db->query('Select id from users_alert Where user_id="'.$user_id.'" and POID="'.$POID.'" ');
+//		if($query->num_rows()==0){
+//			$this->db->query('insert into users_alert set user_id="'.$user_id.'",POID="'.$POID.'",Alert_id="'.$Alert_id.'",DateCreate=now(),DateEnd=adddate(curdate(),180)');
+//		}else{
+//			$row=$query->row();
+//			$this->db->query('update users_alert set Alert_id="'.$Alert_id.'",DateCreate=now(),DateEnd=adddate(curdate(),180) where id="'.$row->id.'" ');
+//		}
+	}
+
+	function check_LineAlert($POID){
+		$resultLineAlert=array();
+		$user_id=$this->session->userdata('user_id');
+		$query=$this->db->query('Select Alert_id from users_alert Where user_id="'.$user_id.'" and POID="'.$POID.'"');
+		foreach ($query->result() as $row){
+			$Alert_id=$row->Alert_id;
+			array_push($resultLineAlert,$Alert_id);
+		}
+		echo json_encode($resultLineAlert);
+	}
+
+	public function ProjectNameFolder($POID){
+		$queryProject=$this->db->query('select Project.PName_en as PName_en from Project,Post Where Post.POID="'.$POID.'" and Post.PID=Project.PID');
+		$rowProject=$queryProject->row();
+		$PName_en=$rowProject->PName_en;
+		$PName_en=str_replace(" ", "-", $PName_en);
+		$PName_en=str_replace("@", "-", $PName_en);
+		$PName_en=str_replace("'", "-", $PName_en);
+		$PName_en=str_replace("(", "-", $PName_en);
+		$PName_en=str_replace(")", "-", $PName_en);
+		$PName_en=str_replace(":", "-", $PName_en);
+		$PName_en=str_replace("&", "-and-", $PName_en);
+		return $PName_en;
+	}
+
+	public function PostPathName($POID){
+		$queryPost=$this->db->query('select TOAdvertising from Post Where POID="'.$POID.'"');
+		$rowPost=$queryPost->row();
+		$Advertising=$rowPost->TOAdvertising;
+		if ($Advertising=='1' or $Advertising=='2'){
+			$NamePath='sell';
+		} else {
+			$NamePath='rent';
+		};
+		return $NamePath;
+	}
+
+  public function CheckDeveloper($user_id){
+    $query=$this->db->query('Select developer from users where id="'.$user_id.'"');
+    $rowUser=$query->row();
+    return $rowUser->developer;
+  }
+
+  public function ListProjectDeveloper($user_id){
+    $query=$this->db->query('Select * from ProjectDeveloper Where user_id="'.$user_id.'" order by PID');
+    return $query;
+  }
+
+  public function ProjectDeveloperName($PID){
+    $query=$this->db->query('Select PName_th from Project Where PID="'.$PID.'"');
+    $row=$query->row();
+    return $row->PName_th;
+  }
+
+  public function ListUnitDeveloper($PID,$user_id){
+    $query=$this->db->query('Select * from Post Where PID="'.$PID.'" and user_id="'.$user_id.'"');
+    return $query;
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+?>
