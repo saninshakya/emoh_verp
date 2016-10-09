@@ -1,6 +1,6 @@
 <font color="blue">
 	<div class="container">
-		<div class="col-lg-offset-1 col-lg-10 col-md-offset-1 col-md-10 col-sm-12 col-xs-12">
+		<div class="col-lg-offset-0 col-lg-12 col-md-offset-1 col-md-10 col-sm-12 col-xs-12">
 			<br>
 			<?php
 			$attributes = array('class' => 'form-inline', 'id' => 'adControl_form');
@@ -16,6 +16,8 @@
 							<th>Preview: </th>
 							<th>Mobile: </th>
 							<th>Preview: </th>
+							<th>Start Date: </th>
+							<th>End Date: </th>
 						</tr> 
 					</thead>
 					<tbody>
@@ -29,6 +31,25 @@
 								<input id="coverBanner_mobile" type='file' name="coverBanner_mobile" />
 							</td>
 							<td><div id="coverPreview_mobile"></div></td>
+							<td>
+
+								<div class="input-group date col-md-12 col-xs-12" data-provide="datepicker">
+									<input type="text" class="form-control input-z datepicker" name="startDate_coverBanner" data-width="100%">
+									<div class="input-group-addon padding-t5">
+										<span class="glyphicon glyphicon-th"></span>
+									</div>
+								</div>
+								<!-- <input type="text" name="startDate_coverBanner" width="100"> -->
+							</td>
+							<td>
+								<div class="input-group date col-md-12 col-xs-12" data-provide="datepicker">
+									<input type="text" class="form-control input-z datepicker" name="endDate_coverBanner" data-width="100%">
+									<div class="input-group-addon padding-t5">
+										<span class="glyphicon glyphicon-th"></span>
+									</div>
+								</div>
+								<!-- <input type="text" name="endDate_coverBanner" width="100"> -->
+							</td>
 						</tr>
 						<tr>
 							<td>Map</td>
@@ -36,6 +57,24 @@
 							<td><div id="mapPreview"></div></td>
 							<td><input type='file' id="map_mobile" name="map_mobile" /></td>
 							<td><div id="mapPreview_mobile"></div></td>
+							<td>
+								<div class="input-group date col-md-12 col-xs-12" data-provide="datepicker">
+									<input type="text" class="form-control input-z datepicker" name="startDate_map"  data-width="100%">
+									<div class="input-group-addon padding-t5">
+										<span class="glyphicon glyphicon-th"></span>
+									</div>
+								</div>
+								<!-- <input type="text" name="startDate_map"> -->
+							</td>
+							<td>
+								<div class="input-group date col-md-12 col-xs-12" data-provide="datepicker">
+									<input type="text" class="form-control input-z datepicker" name="endDate_map"  data-width="100%">
+									<div class="input-group-addon padding-t5">
+										<span class="glyphicon glyphicon-th"></span>
+									</div>
+								</div>
+								<!-- <input type="text" name="endDate_map"> -->
+							</td>
 						</tr>
 						<tr>
 							<td>Dashboard & Listing input</td>
@@ -43,6 +82,24 @@
 							<td><div id="listingInputPreview"></div></td>
 							<td><input type='file' id="listingInput_mobile" name="listingInput_mobile" /></td>
 							<td><div id="listingInputPreview_mobile"></div></td>
+							<td>
+								<div class="input-group date col-md-12 col-xs-12" data-provide="datepicker">
+									<input type="text" class="form-control input-z datepicker" name="startDate_listingInput"  data-width="100%">
+									<div class="input-group-addon padding-t5">
+										<span class="glyphicon glyphicon-th"></span>
+									</div>
+								</div>
+								<!-- <input type="text" name="startDate_listingInput"> -->
+							</td>
+							<td>
+								<div class="input-group date col-md-12 col-xs-12" data-provide="datepicker">
+									<input type="text" class="form-control input-z datepicker" name="endDate_listingInput"  data-width="100%">
+									<div class="input-group-addon padding-t5">
+										<span class="glyphicon glyphicon-th"></span>
+									</div>
+								</div>
+								<!-- <input type="text" name="endDate_listingInput"> -->
+							</td>
 						</tr>
 						<tr>
 							<td>Boost Post</td>
@@ -50,6 +107,24 @@
 							<td><div id="boostPreview"></div></td>
 							<td><input type='file' id="boostPost_mobile" name="boostPost_mobile" /></td>
 							<td><div id="boostPreview_mobile"></div></td>
+							<td>
+								<div class="input-group date col-md-12 col-xs-12" data-provide="datepicker">
+									<input type="text" class="form-control input-z datepicker" name="startDate_boostPost"  data-width="100%">
+									<div class="input-group-addon padding-t5">
+										<span class="glyphicon glyphicon-th"></span>
+									</div>
+								</div>
+								<!-- <input type="text" name="startDate_boostPost"> -->
+							</td>
+							<td>
+								<div class="input-group date col-md-12 col-xs-12" data-provide="datepicker">
+									<input type="text" class="form-control input-z datepicker" name="endDate_boostPost"  data-width="100%">
+									<div class="input-group-addon padding-t5">
+										<span class="glyphicon glyphicon-th"></span>
+									</div>
+								</div>
+								<!-- <input type="text" name="endDate_boostPost"> -->
+							</td>
 						</tr>
 						<tr>
 							<td>Coin purchasing</td>
@@ -57,6 +132,24 @@
 							<td><div id="coinPreview"></div></td>
 							<td><input type='file' id="coinPurchasing_mobile" name="coinPurchasing_mobile" /></td>
 							<td><div id="coinPreview_mobile"></div></td>
+							<td>
+								<div class="input-group date col-md-12 col-xs-12" data-provide="datepicker">
+									<input type="text" class="form-control input-z datepicker" name="startDate_coinPurchasing"  data-width="100%">
+									<div class="input-group-addon padding-t5">
+										<span class="glyphicon glyphicon-th"></span>
+									</div>
+								</div>
+								<!-- <input type="text" name="startDate_coinPurchasing"> -->
+							</td>
+							<td>
+								<div class="input-group date col-md-12 col-xs-12" data-provide="datepicker">
+									<input type="text" class="form-control input-z datepicker" name="endDate_coinPurchasing"  data-width="100%">
+									<div class="input-group-addon padding-t5">
+										<span class="glyphicon glyphicon-th"></span>
+									</div>
+								</div>
+								<!-- <input type="text" name="endDate_coinPurchasing"> -->
+							</td>
 						</tr>
 						<tr>
 							<td>Unit details</td>
@@ -64,6 +157,24 @@
 							<td><div id="unitPreview"></div></td>
 							<td><input type='file' id="unitDetails_mobile" name="unitDetails_mobile" /></td>
 							<td><div id="unitPreview_mobile"></div></td>
+							<td>
+								<div class="input-group date col-md-12 col-xs-12" data-provide="datepicker">
+									<input type="text" class="form-control input-z datepicker" name="startDate_unitDetails"  data-width="100%">
+									<div class="input-group-addon padding-t5">
+										<span class="glyphicon glyphicon-th"></span>
+									</div>
+								</div>
+								<!-- <input type="text" name="startDate_unitDetails"> -->
+							</td>
+							<td>
+								<div class="input-group date col-md-12 col-xs-12" data-provide="datepicker">
+									<input type="text" class="form-control input-z datepicker" name="endDate_unitDetails"  data-width="100%">
+									<div class="input-group-addon padding-t5">
+										<span class="glyphicon glyphicon-th"></span>
+									</div>
+								</div>
+								<!-- <input type="text" name="endDate_unitDetails"> -->
+							</td>
 						</tr>
 						<tr>
 							<td>Ad Landing Page</td>
@@ -71,6 +182,24 @@
 							<td><div id="adPreview"></div></td>
 							<td><input type='file' id="adLandingPage_mobile" name="adLandingPage_mobile" /></td>
 							<td><div id="adPreview_mobile"></div></td>
+							<td>
+								<div class="input-group date col-md-12 col-xs-12" data-provide="datepicker">
+									<input type="text" class="form-control input-z datepicker" name="startDate_adLandingPage"  data-width="100%">
+									<div class="input-group-addon padding-t5">
+										<span class="glyphicon glyphicon-th"></span>
+									</div>
+								</div>
+								<!-- <input type="text" name="startDate_adLandingPage"> -->
+							</td>
+							<td>
+								<div class="input-group date col-md-12 col-xs-12" data-provide="datepicker">
+									<input type="text" class="form-control input-z datepicker" name="endDate_adLandingPage"  data-width="100%">
+									<div class="input-group-addon padding-t5">
+										<span class="glyphicon glyphicon-th"></span>
+									</div>
+								</div>
+								<!-- <input type="text" name="endDate_adLandingPage"> -->
+							</td>
 						</tr>
 					</div>
 				</tbody>
@@ -84,7 +213,10 @@
 </div>
 </font>
 <br>
+<script type="text/javascript" src="/js/bootstrap-datepicker.js"></script>
+
 <script type="text/javascript">
+	$('.datepicker').datepicker();
 	$(function(){
 		$("input[type=file]").on("change", function(e) {
 			e.preventDefault();
@@ -95,21 +227,17 @@
 			.forEach(function(file, idx) {
 				var reader = new FileReader();
 				reader.onload = function(event) {
-					$("<span />", {
-						"html": "<br />" + file.name
-					}).add("<br />")
-					.add(
-						$("<img />", {
-							"src": event.target.result,
-							"class": idx,
-							"width": 100
-						})).add("<div />",{
+					$("<img />", {
+						"src": event.target.result,
+						"class": idx,
+						"width": 100
+					}).add("<div />",{
 						"class": "closeDiv"
 					}).appendTo(previews);
-					};
-					reader.readAsDataURL(file);
-					$("#btn-upload").prop("disabled",false);
-				});
+				};
+				reader.readAsDataURL(file);
+				$("#btn-upload").prop("disabled",false);
+			});
 		});
 
 		$('div').on('click', '.closeDiv', function(e){
@@ -124,6 +252,7 @@
 		})
 	});
 </script>
+
 <style type="text/css">
 /*	input[type=file]{
 		color:transparent;

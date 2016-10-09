@@ -1919,6 +1919,18 @@ public function uploadResized()
      		$config['max_width']= 1024;
      		$config['max_height']= 768;
      		$this->load->library('upload', $config);
+
+     		foreach ($_FILES as $key => $file) {
+     			if(!@empty($file['name'])){
+     				foreach ($_POST as $postKey =>$post) {
+     					$period = explode('_',$postKey);
+     					if(in_array(explode('_',$key)[0], $period)){
+     						$_FILES[$key][$period[0]] = $post;
+     					}
+     				}
+     			}
+     		}
+
      		foreach($_FILES as $fieldname => $file){
      			if(!empty($file['name'])){
      				try {
@@ -1927,7 +1939,6 @@ public function uploadResized()
      						$this->upload->initialize($config);
      						if ( ! $this->upload->do_upload($fieldname)){
      							$error = array('error' => $this->upload->display_errors());
-     							print_r($error);
      						}else{
      							$data = array('upload_data' => $this->upload->data());
      						}
@@ -1939,7 +1950,9 @@ public function uploadResized()
      						'filepath'=> $config['upload_path'].$file['name'],
      						'filename'=>$file['name'],
      						'Active'=>1,
-     						'DateTime'=>date("Y-m-d h:i:sa")
+     						'DateTime'=>date("Y-m-d h:i:sa"),
+     						'start_date'=> date("Y-m-d", strtotime($file['startDate'])),
+     						'end_date'=>date("Y-m-d", strtotime($file['endDate']))
      						);
 
      					$this->db->insert('ImageAd',$data);
@@ -1976,14 +1989,6 @@ public function uploadResized()
      	echo json_encode($array);
      }
 
-     // public function adControlInActive(){
-     // 	$object =$_POST['data'];
-     // 	$array = json_decode($object);
-     // 	$pieces = explode(",", $object);
-     // 	$query=$this->db->query('update ImageAd set Active= "'.$array[1].'" Where id="'.$array[0].'"');
-     // 	$array = array('success' => 'true');
-     // 	echo json_encode($array);
-     // }
 //End Line CI_Controller Admin
  }
  ?>
