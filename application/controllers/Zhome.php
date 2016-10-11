@@ -482,11 +482,11 @@ class Zhome extends CI_Controller {
 		$language=1;
 		$KeyNewPost = $this->uri->segment(3);
 		$this->post->DelTmpPost();
-		if ($KeyNewPost=="newpost"){
+		/*if ($KeyNewPost=="newpost"){
 			$this->post->newPost2();
 		} else {
 			$this->post->newPost();
-		}
+		}*/
 		$this->session->set_userdata('lastpage','/');
 		$this->lang_check();
 		$ChkLogin=$this->ChkLogin();
@@ -520,6 +520,12 @@ class Zhome extends CI_Controller {
 		$this->load->view('inputform_v2',$data);
 		$this->load->view('footer_inputform_v2',$data);
 		$this->load->view('footerstandard_v2',$data);
+	}
+	
+	public function checkPostNew(){
+		$TOProperty=$_POST['TOProperty'];
+		$result = $this->post->checkPostNew($TOProperty);
+		echo $result;
 	}
 
 	public function post11()
@@ -719,8 +725,7 @@ class Zhome extends CI_Controller {
 		$this->post->updateCondoSpec($_POST);
 	}
 
-	public function updatePost()
-	{
+	public function updatePost(){
 		$this->post->updatePost($_POST);
 	}
 
@@ -3383,26 +3388,81 @@ class Zhome extends CI_Controller {
 
 	public function savePhotographer(){
 		if(isset($_POST['btn-photographer'])){
+			$packageVal = explode('__', $_REQUEST['spackage']);
 			$data = array(
-				'package'=>$_REQUEST['package'],
-				'selected_date'=>$_REQUEST['selected_date'],
-				'selected_time'=>$_REQUEST['selected_time'],
+				'service_type'=>$_REQUEST['service_type'],
+				'package'=>$packageVal[0],
+				'operate_date'=>date("Y-m-d", strtotime($_REQUEST['operate_date'])),
+				'operate_time'=>$_REQUEST['hour'].':'.$_REQUEST['minute'],
+				'address'=>$_REQUEST['address'],
 				'project' =>$_REQUEST['project'],
-				'fullname' =>$_REQUEST['fullname'],
-				'contact_no'=>$_REQUEST['contact_no']
+				'contact_name' =>$_REQUEST['contact_name'],
+				'contact_tel'=>$_REQUEST['contact_tel'],
+				'contact_email'=>$_REQUEST['contact_email']
 				);
+
 			$query=$this->postemail->getEmailGroup('sale');
 			$row=$query->row();
-			$mail_send=$_REQUEST['email'].','.$row->mail_to;
-			$recipients=explode(",",$mail_send);
+			$mail_to=$_REQUEST['contact_email'];
+			$recipients_to=explode(",",$mail_to);
+			$mail_cc=$row->mail_to;
+			$recipients_cc=explode(",",$mail_cc);
 
-			$subj = 'Photographer Page';
+			$subj = 'ZmyHome Photograph Service Purchase Order#';
+			$message='<table><tr>';
+			$message.='<td colspan="2">ZmyHome ขอขอบคุณที่ท่านให้ความสนใจ สั่งจองบริการถ่ายภาพของเรา ตามรายละเอียดดังนี้</td>';
+			$message.='</tr><tr>';
+			$message.='<td style="height: 10px;">&nbsp;</td>';
+			$message.='</tr><tr>';
+			$message.='<td>บริการ : </td><td>'.$packageVal[1].'</td>';
+			$message.='</tr><tr>';
+			$message.='<td>วันที่ใช้บริการ : </td><td>'.date("d/m/Y", strtotime($_REQUEST['operate_date'])).' '.$_REQUEST['hour'].':'.$_REQUEST['minute'].'</td>';
+			$message.='</tr><tr>';
+			$message.='<td>ที่อยู่ : </td><td>'.$_REQUEST["address"].'</td>';
+			$message.='</tr><tr>';
+			$message.='<td>โครงการ : </td><td>'.$_REQUEST["project"].'</td>';
+			$message.='</tr><tr>';
+			$message.='<td>ชื่อผู้ติดต่อ : </td><td>'.$_REQUEST["contact_name"].'</td>';
+			$message.='</tr><tr>';
+			$message.='<td>&nbsp;</td><td>'.$_REQUEST["contact_tel"].'</td>';
+			$message.='</tr><tr>';
+			$message.='<td>&nbsp;</td><td>'.$_REQUEST["contact_email"].'</td>';
+			//$message.='</tr><tr>';
+			//$message.='ค่าบริการ : </td><td>'.$payment.'</td>';
+			$message.='</tr><tr>';
+			$message.='<td style="height: 10px;">&nbsp;</td>';
+			$message.='</tr><tr>';
+			$message.='<td>โอนเงินเข้าบัญชี : </td>';
+			$message.='<td>บัญชีธนาคารทหารไทย</td>';
+			$message.='</tr><tr>';
+			$message.='<td>&nbsp;</td><td>บริษัท แซท โฮม จำกัด เลขที่บัญชี 269-2-03742-3 </td>';
+			$message.='</tr><tr>';
+			$message.='<td>&nbsp;</td><td>และถ่ายภาพสลิปธนาคารแล้วส่งมายัง</td>';
+			$message.='</tr><tr>';
+			$message.='<td>&nbsp;</td><td>- Line@ZmyHome<br>
+				- email : Sale@zmyhome.com<br>
+				- Fax : 02-661-5004</td>';
+			$message.='</tr></table>';
+			$message.='<br>';
+			$message.='<table><tr>';
+			$message.='<td>ทาง ZmyHome จะติดต่อกลับท่าน เพื่อยืนยันการให้บริการตามรายละเอียดข้างต้น</td>';
+			$message.='</tr><tr>';
+			$message.='<td>เมื่อได้รับหลักฐานการโอนเงินเรียบร้อยแล้วครับ</td>';
+			$message.='</tr><tr>';
+			$message.='<td style="height: 10px;">&nbsp;</td>';
+			$message.='</tr><tr>';
+			$message.='<td>ขอแสดงความนับถือ</td>';
+			$message.='</tr><tr>';
+			$message.='<td>https://ZmyHome.com เว็บคอนโดเจ้าของขายเอง</td>';
+			$message.='</tr></table>';
 
-			$message = "package: " . $_REQUEST["package"] . "<br/>" ."project: ". $_REQUEST["project"].
-			"<br/>" ."fullname: ". $_REQUEST["fullname"]."<br/>" ."contact_no: ". $_REQUEST["contact_no"].
-			"<br/>" ."email: ". $_REQUEST["email"]."<br/>" ."selected_date: ". $_REQUEST["selected_date"].
-			"<br/>" ."selected_time: ". $_REQUEST["selected_time"];
-			$this->postemail->sendMultipleEmail($message, $recipients, $subj);
+			/*$message = "package: " . $packageVal[1] . "<br/>" ."project: ". $_REQUEST["project"].
+			"<br/>" ."contact_name: ". $_REQUEST["contact_name"]."<br/>" ."contact_tel: ". $_REQUEST["contact_tel"].
+			"<br/>" ."contact_email: ". $_REQUEST["contact_email"];*/
+
+			$this->postemail->sendMultipleEmail($message, $recipients_to,$recipients_cc, $subj);
+			$this->db->insert('Service',$data);
+			redirect(base_url(), 'refresh');
 		}
 	}
 
@@ -3417,26 +3477,79 @@ class Zhome extends CI_Controller {
 
 	public function saveLegal(){
 		if(isset($_POST['btn-legal'])){
+			$packageVal = explode('__', $_REQUEST['spackage']);
+
 			$data = array(
-				'package'=>$_REQUEST['package'],
-				'selected_date'=>$_REQUEST['selected_date'],
-				'selected_time'=>$_REQUEST['selected_time'],
+				'service_type'=>$_REQUEST['service_type'],
+				'package'=>$packageVal[0],
+				'operate_date'=>date("Y-m-d", strtotime($_REQUEST['operate_date'])),
+				'address'=>$_REQUEST['address'],
 				'project' =>$_REQUEST['project'],
-				'fullname' =>$_REQUEST['fullname'],
-				'contact_no'=>$_REQUEST['contact_no']
+				'contact_name' =>$_REQUEST['contact_name'],
+				'contact_tel'=>$_REQUEST['contact_tel'],
+				'contact_email'=>$_REQUEST['contact_email']
 				);
 			$query=$this->postemail->getEmailGroup('sale');
 			$row=$query->row();
-			$mail_send=$_REQUEST['email'].','.$row->mail_to;
-			$recipients=explode(",",$mail_send);
+			$mail_to=$_REQUEST['contact_email'];
+			$recipients_to=explode(",",$mail_to);
+			$mail_cc=$row->mail_to;
+			$recipients_cc=explode(",",$mail_cc);
 
-			$subj = 'Legal Page';
+			$subj = 'ZmyHome Legal Service Purchase Order#';
+			$message='<table><tr>';
+			$message.='<td colspan="2">ZmyHome ขอขอบคุณที่ท่านให้ความสนใจ สั่งจองบริการทางกฏหมายของเรา ตามรายละเอียดดังนี้</td>';
+			$message.='</tr><tr>';
+			$message.='<td style="height: 10px;">&nbsp;</td>';
+			$message.='</tr><tr>';
+			$message.='<td>บริการ : </td><td>'.$packageVal[1].'</td>';
+			$message.='</tr><tr>';
+			$message.='<td>วันที่ใช้บริการ : </td><td>'.date("d/m/Y", strtotime($_REQUEST['operate_date'])).'</td>';
+			$message.='</tr><tr>';
+			$message.='<td>ที่อยู่ : </td><td>'.$_REQUEST["address"].'</td>';
+			$message.='</tr><tr>';
+			$message.='<td>โครงการ : </td><td>'.$_REQUEST["project"].'</td>';
+			$message.='</tr><tr>';
+			$message.='<td>ชื่อผู้ติดต่อ : </td><td>'.$_REQUEST["contact_name"].'</td>';
+			$message.='</tr><tr>';
+			$message.='<td>&nbsp;</td><td>'.$_REQUEST["contact_tel"].'</td>';
+			$message.='</tr><tr>';
+			$message.='<td>&nbsp;</td><td>'.$_REQUEST["contact_email"].'</td>';
+			//$message.='</tr><tr>';
+			//$message.='ค่าบริการ : </td><td>'.$payment.'</td>';
+			$message.='</tr><tr>';
+			$message.='<td style="height: 10px;">&nbsp;</td>';
+			$message.='</tr><tr>';
+			$message.='<td>โอนเงินเข้าบัญชี : </td>';
+			$message.='<td>บัญชีธนาคารทหารไทย</td>';
+			$message.='</tr><tr>';
+			$message.='<td>&nbsp;</td><td>บริษัท แซท โฮม จำกัด เลขที่บัญชี 269-2-03742-3 </td>';
+			$message.='</tr><tr>';
+			$message.='<td>&nbsp;</td><td>และถ่ายภาพสลิปธนาคารแล้วส่งมายัง</td>';
+			$message.='</tr><tr>';
+			$message.='<td>&nbsp;</td><td>- Line@ZmyHome<br>
+				- email : Sale@zmyhome.com<br>
+				- Fax : 02-661-5004</td>';
+			$message.='</tr></table>';
+			$message.='<br>';
+			$message.='<table><tr>';
+			$message.='<td>ทาง ZmyHome จะติดต่อกลับท่าน เพื่อยืนยันการให้บริการตามรายละเอียดข้างต้น</td>';
+			$message.='</tr><tr>';
+			$message.='<td>เมื่อได้รับหลักฐานการโอนเงินเรียบร้อยแล้วครับ</td>';
+			$message.='</tr><tr>';
+			$message.='<td style="height: 10px;">&nbsp;</td>';
+			$message.='</tr><tr>';
+			$message.='<td>ขอแสดงความนับถือ</td>';
+			$message.='</tr><tr>';
+			$message.='<td>https://ZmyHome.com เว็บคอนโดเจ้าของขายเอง</td>';
+			$message.='</tr></table>';
 
-			$message = "package: " . $_REQUEST["package"] . "<br/>" ."project: ". $_REQUEST["project"].
-			"<br/>" ."fullname: ". $_REQUEST["fullname"]."<br/>" ."contact_no: ". $_REQUEST["contact_no"].
-			"<br/>" ."email: ". $_REQUEST["email"]."<br/>" ."selected_date: ". $_REQUEST["selected_date"].
-			"<br/>" ."selected_time: ". $_REQUEST["selected_time"];
-			$this->postemail->sendMultipleEmail($message, $recipients, $subj);
+			/*$message = "package: " . $packageVal[1] . "<br/>" ."project: ". $_REQUEST["project"].
+			"<br/>" ."contact_name: ". $_REQUEST["contact_name"]."<br/>" ."contact_tel: ". $_REQUEST["contact_tel"].
+			"<br/>" ."contact_email: ". $_REQUEST["contact_email"];*/
+			$this->postemail->sendMultipleEmail($message, $recipients_to,$recipients_cc, $subj);
+			$this->db->insert('Service',$data);
+			redirect(base_url(), 'refresh');
 		}
 	}
 

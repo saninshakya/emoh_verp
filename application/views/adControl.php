@@ -183,75 +183,41 @@
 </font>
 <br>
 <script type="text/javascript" src="/js/bootstrap-datepicker.js"></script>
-<script type="text/javascript" src="/js/validation.min.js"></script>
 
 <script type="text/javascript">
 
 	$(function(){
-		//check if the date selected is available or not?
 		$(".datepicker").datepicker({
 			dateFormat: 'dd/mm/yy'
 		}).on("changeDate", function (e) {
-			var pageId = $(this).closest('tr').find('td:first').next().find('input').attr('id');
-			var pcImageUploaded = document.getElementById(pageId).files.length;
-			var forMobile = pageId+'_mobile';
-			var mobileImageUploaded = document.getElementById(forMobile).files.length;
-			var dateSelected = formatDate(e.date.toString());
-			// var clickedDate = $(this).attr("id","clicked");
+			alert();
+			return;
+			var checkDate = $(this).attr('name');
+			var checkName = checkDate.split('_');
+			var checkNext= $(this).closest('tr').find('.endDate').val();
 
-			var me = $(this);
+			console.log(checkNext);
 
-			if(pcImageUploaded==1 || (pcImageUploaded==1 && mobileImageUploaded ==1)){
-				checkDateAvailable(pageId, dateSelected, me);
-				// pageId & dateSelected
-			}
-			else if(mobileImageUploaded == 1){
-				checkDateAvailable(forMobile, dateSelected, me);
-				//forMobile & dateSelected
-			}
-			else{
-				alert('select image first');
-				return false;
+			var input = e.date.toString();
+			var date = convert(input);
 
-			}
+			console.log(date);
 		});
-		//ajax post
-		function checkDateAvailable(pageSelected, dateSelected, me){
-			var events = [];
-			events.push(pageSelected);
-			events.push(dateSelected);
-			me.attr("id","clicked");
-
-			$.post('/admin/availabilityDate',{data:JSON.stringify(events)},function(data){
-				if(data.success=='false'){
-					alert('Selected date is already been used');
-					$("#clicked").val('');
-					$('input#clicked').removeAttr('id');
-					return false;
-				}
-			},'json');
-			
-		}
-		// convert the date to y/m/d format
-		function formatDate(str) {
+		function convert(str) {
 			var date = new Date(str),
 			mnth = ("0" + (date.getMonth()+1)).slice(-2),
 			day = ("0" + date.getDate()).slice(-2);
 			return [ date.getFullYear(), mnth, day ].join("-");
 		}
-
-
 		$("input[type=file]").on("change", function(e) {
 			e.preventDefault();
-			// for size
-			var filename = $(this).attr('name');
-			var fileSize = $("#"+filename)[0].files[0].size;
-
-			//for id
-			var id = $(this).closest('td').next('td').find('div').attr('id');
+			var id = $(this).closest('td').next('td').find('div').attr('id'),
+			fileFind = $(this).closest('tr').find('input').attr('id'),
+			fileSize = $("#"+fileFind)[0].files[0].size;
 
 			if(fileSize>100000){
 				alert('Attachment size exceeds the allowable limit');
+				$("#"+fileFind).val('');
 				return false;
 			}
 
@@ -286,6 +252,14 @@
 			closest.find('span:first').html('');
 			$("#"+file).val('');
 		});
+/*
+		$('.startDate').on("change", function(e){
+			console.log('startDate');
+		});
+
+		$('.endDate').on("change", function(e){
+			console.log('endDate');
+		});*/
 	});
 </script>
 

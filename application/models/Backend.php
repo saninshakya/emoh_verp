@@ -1292,8 +1292,21 @@ class Backend extends CI_Model {
 		return $query;
 	}
 	function listAdControl(){
-		$query=$this->db->query("select * from ImageAd order by device_type ASC");
+		$query=$this->db->query("select ImageAd.* FROM ImageAd INNER JOIN AdPageGroup ON ImageAd.group_page=AdPageGroup.group_page ORDER BY ImageAd.group_page, ImageAd.device_type ASC");
 		return $query;
+	}
+	function getGroupPage($fieldname){
+		$query=$this->db->query('select group_page FROM AdPageGroup WHERE pc_page="'.$fieldname.'" OR mobile_page="'.$fieldname.'"');
+		$row=$query->row();
+		$value=$row->group_page;
+		return $value;
+	}
+
+	function checkDateAvailability($pageSelected, $dateSelected){
+		$query = $this->db->query('select COUNT(id) as number FROM ImageAd where "'.$dateSelected.'" BETWEEN start_date and end_date AND page="'.$pageSelected.'"');
+		$row=$query->row();
+		$value=$row->number;
+		return $value;
 	}
 }
 ?>

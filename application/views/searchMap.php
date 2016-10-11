@@ -2049,11 +2049,11 @@ function initMap() {
 		if(!content){content="-";}
 		content = content.toString();
 
-		if(returnSearch[i].ProjectCheck==1){//search Project
-			var fill_color='#de761b';//brown
+		if(returnSearch[i].PID==imgBanner[0].PID){
+			var fill_color='#FF0000';
 		}else{
-			if(returnSearch[i].PID==imgBanner[0].PID){
-				var fill_color='#FF0000';
+			if(returnSearch[i].ProjectCheck==1){//search Project
+				var fill_color='#de761b';//brown
 			}else{
 				var fill_color=returnSearch[i].AdColor;
 			}
@@ -2444,11 +2444,11 @@ function changeSizeIcon(num,type){
 	}
 	for(var i=0;i<maxlength;i++){
 		if(i==num && returnSearch[i].ProjectName){
-			if(returnSearch[i].ProjectCheck==1){//search Project
-				var fill_color='#de761b';//brown
+			if(returnSearch[i].PID==imgBanner[0].PID){
+				var fill_color='#FF0000';
 			}else{
-				if(returnSearch[i].PID==imgBanner[0].PID){
-					var fill_color='#FF0000';
+				if(returnSearch[i].ProjectCheck==1){//search Project
+					var fill_color='#de761b';//brown
 				}else{
 					var fill_color=returnSearch[i].AdColor;
 				}

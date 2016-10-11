@@ -1,4 +1,5 @@
 <!--- footer -->
+</div>
 <div class="col-md-12 col-sm-12 col-xs-12 blog-bg-grey">
 	<br>
 	<div class="col-md-2"></div>

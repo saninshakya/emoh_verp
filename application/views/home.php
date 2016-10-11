@@ -198,10 +198,10 @@
 
 		<!--End 3columns->
 	</div>-->
-    <div class="col-xs-12  home text-center q-maindiv">
+    <div id="service" class="col-xs-12  home text-center q-maindiv">
 	    <div class="col-xs-12 padding-none">
 			<div class="col-xs-12 q-header text-center">
-				<h2>ลงฟรี ลงง่าย ไม่ต้องคอยอัพ</h2>
+				<h2>ช่วยเหลือคุณ ตั้งแต่ต้นจนจบ</h2>
 			</div>
 		</div>
 		<div class="col-xs-12 col-md-8 col-md-push-2">

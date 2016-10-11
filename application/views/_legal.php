@@ -7,113 +7,109 @@
 	</div>
 </div>
 
-<div class="container font18">
+<div class="font18 padding-none">
   <br>
 
 <?php
 $attributes = array('class' => 'form-inline', 'id' => 'legal_form');
 echo form_open('/zhome/saveLegal', $attributes);
 ?>
-<div class="padding-none">
-	<div class="col-lg-6 col-md-6 padding-none pull-right">
-		<div>
+<div class="row">
+	<div class="col-lg-4 col-lg-push-6 col-md-4 col-md-push-6  padding-left-clear-mobile">
+		<div class="col-lg-12">
 			<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6"><span>แบบฟอร์ม</span></div>
 			<div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 text-right"><span>ภาษาไทย</span></div>
 			<div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 text-right"><span>ภาษาอังกฤษ</span></div>
 		</div>
 		<div class="clearfix"></div>
 
-		<div class="title-z">
+		<div class="col-lg-12 title-z">
 			<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">1. ทำสัญญาเช่า</div>
 			<div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 text-right"><span>3,000</span></div>
 			<div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 text-right"><span>5,000</span></div>
 		</div>
 		<div class="clearfix"></div>
-		<div class="title-z">
+		<div class="col-lg-12 title-z">
 		   <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">2. ทำเช็คลิสต์ เฟอร์นิเจอร์ และความเสียหาย</div>
 		   <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 text-right"><span>4,000</span></div>
 		   <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 text-right"><span class="">4,000</span></div>
 		</div>
 		<div class="clearfix"></div>
-		<div class="title-z">
+		<div class="col-lg-12 title-z">
 			<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">3. ทำสัญญาจะซื้อจะขาย</div>
 			<div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 text-right"><span>3,000</span></div>
 			<div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 text-right"><span>5,000</span></div>
 		</div>
 		<div class="clearfix"></div>
-		<div class="title-z">
+		<div class="col-lg-12 title-z">
 			<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">4. ตรวจสอบค่าโอน - ภาษี ณ กรมที่ดิน</div>
 			<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 text-right"><span>2,000</span></div>
 		</div>
 		<div class="clearfix"></div>
-		<div class="title-z">
+		<div class="col-lg-12 title-z">
 			<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">5. โอนกรรมสิทธิ ณ กรมที่ดิน</div>
 			<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 text-right"><span>6,000</span></div>
 		</div>
 		<div class="clearfix"></div>
-		<div class="title-z">
+		<div class="col-lg-12 title-z">
 			<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">&nbsp;&nbsp;&nbsp;- ค่ารับส่งเอกสาร</div>
 			<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 text-right"><span>300</span></div>
 		</div>
-		<div class="clearfix"></div>
-		<div class="title-z">
+		<div class="col-lg-12 title-z">
 			<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">&nbsp;&nbsp;&nbsp;- ค่าเดินทาง</div>
 			<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 text-right"><span>500</span></div>
 		</div>
 		<div class="clearfix"></div>
-		<div class="title-z">
+		<div class="col-lg-12 title-z">
 			<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">6. ดำเนินการขอรังวัด</div>
 			<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 text-right"><span>8,000</span></div>
 		</div>
 		<div class="clearfix"></div>
-		<div class="title-z">
+		<div class="col-lg-12 title-z">
 			<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">7. คัดสำเนาโฉนด ตรวจสอบกรรมสิทธิ</div>
 			<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 text-right"><span>8,000</span></div>
 		</div>
 		<div class="clearfix"></div>
-		<div class="title-z">
+		<div class="col-lg-12 title-z">
 			<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">&nbsp;&nbsp;&nbsp;- ค่าเดินทาง</div>
 			<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 text-right"><span>500</span></div>
 		</div>
 		<div class="clearfix"></div>
-		<div class="title-z">
+		<div class="col-lg-12 title-z">
 			<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">8. โอนมิเตอร์ไฟฟ้า</div>
 			<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 text-right"><span>3,000</span></div>
 		</div>
 		<div class="clearfix"></div>
-		<div class="title-z">
+		<div class="col-lg-12 title-z">
 			<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">9. โอนมิเตอร์ประปา</div>
 			<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 text-right"><span>3,000</span></div>
 		</div>
 		<div class="clearfix"></div>
-
-		<div class="col-lg-12 col-md-12 title-z">ค่าบริการยังไม่รวมค่าธรรมเนียม ภาษี และค่าใช้จ่ายอื่นๆที่เกิดขึ้นในกระบวนการทั้งหมด</div>
-		<div class="clearfix"></div>
-		<div class="col-lg-6 col-md-12 title-z"><h4 class="text-orange">วิธีชำระเงิน</h4></div>
-		<div class="clearfix"></div>
-		<ol>
-			<li class="title-z">ด้วย credit ในระบบ</li>
-			<li class="title-z">โอนเงินเข้าบัญชี <br><br>
-				บัญชีธนาคารทหารไทย<br>
-				บริษัท แซท โฮม จำกัด เลขที่บัญชี 269-2-03742-3 <br>
-				และถ่ายภาพสลิปธนาคารแล้วส่งมายัง<br><br>
-				- Line@ZmyHome<br>
-				- email : Sale@zmyhome.com<br>
-				- Fax : 02-661-5004<br>
-			</li>
-		</ol>
-		<div class="clearfix"></div>
-		<div class="col-lg-12 col-md-12 title-z">
-			สอบถามเพิ่มเติม 086-788-9844, Line@zmyhome <br> ระหว่างวันจันทร์ - ศุกร์ 8.30-20.00 น.
-		</div>
+     
+			<div class="col-lg-12 col-md-12 col-xs-12 title-z">ค่าบริการยังไม่รวมค่าธรรมเนียม ภาษี และค่าใช้จ่ายอื่นๆที่เกิดขึ้นในกระบวนการทั้งหมด</div>
+			<div class="clearfix"></div>
+			<div class="col-lg-6 col-md-12 title-z col-xs-12"><h4 class="text-orange">วิธีชำระเงิน</h4></div>
+			<div class="clearfix"></div>
+			<ol>
+				<li class="title-z">ด้วย credit ในระบบ</li>
+				<li class="title-z">โอนเงินเข้าบัญชี <br><br>
+					บัญชีธนาคารทหารไทย<br>
+					บริษัท แซท โฮม จำกัด เลขที่บัญชี 269-2-03742-3 <br>
+					และถ่ายภาพสลิปธนาคารแล้วส่งมายัง<br><br>
+					- Line@ZmyHome<br>
+					- email : Sale@zmyhome.com<br>
+					- Fax : 02-661-5004<br>
+				</li>
+			</ol>
+			<div class="clearfix"></div>
+			<div class="col-lg-12 col-md-12 title-z">
+				สอบถามเพิ่มเติม 081-173-7700, Line@zmyhome <br> ระหว่างวันจันทร์ - ศุกร์ 8.30-20.00 น.
+			</div>
+		
 	</div>
 	<br>
-	<div class="clearfix visible-xs visible-sm"></div>
-	<br class="visible-xs visible-sm">
 	<hr class="hidden-lg hidden-md col-sm-12 col-xs-12 padding-none">
-	<div class="clearfix visible-xs visible-sm"></div>
-
-	<div class="col-lg-4 col-lg-push-1 col-md-4 col-md-push-1 photographer padding-none">
+	<div class="col-lg-4  col-lg-pull-2 col-md-4  col-md-pull-2  photographer">
 		<h2 class="text-grey">กรุณากรอกข้อมูล</h2>
 		<br>
 		<div>เลือกบริการที่ต้องการ*</div>
@@ -157,12 +153,14 @@ echo form_open('/zhome/saveLegal', $attributes);
 		<br>
 	</div>
 </div>
-<div class="row padding-none">
+<div class="padding-none">
 	<br>
-	<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 padding-none">
+	<div class="col-lg-8  col-lg-push-2 col-md-8 col-md-push-2 col-sm-12 col-xs-12">
 		<button class="form-control input-z text-white bg-orange-hd w100p" name="btn-legal">บันทึกรายการ</button>
 	</div>
 </div>
+<div class="clearfix"></div>
+<br>
 <input type="hidden" name="service_type" value="2">
 <?php echo form_close(); ?>
 </div>

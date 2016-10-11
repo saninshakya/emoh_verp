@@ -44,8 +44,7 @@
 			<!--<div class="text-left"><h2><span>คุณมี</span><span class="text-red"> <?=$this->credit->CreditBanlance();?></span><span>  เหรียญ</span></h2></div>-->
 			<div class="height25"></div>
 			<div class="row col-lg-12 col-md-12 col-sm-12 col-xs-12 padding-none">
-				<a href="#" id="promotion_txt" class="promotioncode text-grey" onclick="promotioncode();"><span class="glyphicon glyphicon-tag"></span> ป้อนรหัสคูปองหรือโปรโมชั่น</a>
-				<div id="promotion_input" class="col-lg-8 col-md-8 display-none entercode padding-none">
+				<div id="promotion_input" class="col-lg-8 col-md-8 entercode padding-none">
 					<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8 padding-none">
 						<input type="text" id="PromoCode" name="PromoCode" class="form-control input-z padding-left-clear" placeholder="PROMOCODE (ถ้ามี)" style="padding:0; margin:0">
 					</div>
@@ -54,6 +53,10 @@
 						<div class="text-center">ตกลง</div></button>
 						<span class="glyphicon glyphicon-remove-circle cursor text-grey2" style="font-size: 1.75em;padding: 4px 5px 4px 5px;" aria-hidden="true" onclick="cancelPromoCode();"></span>
 					</div>
+				</div>
+				<div class="clearfix"></div>
+				<div class="col-lg-8 col-md-8 padding-none" style="padding-top: 10px;">
+					<a href="#" id="promotion_txt" class="promotioncode text-grey" onclick="//promotioncode();"><span class="glyphicon glyphicon-tag"></span> ป้อนรหัสคูปองหรือโปรโมชั่น</a>
 				</div>
 				<div class="row"></div>
 				<div class="height25"></div>
@@ -408,6 +411,7 @@ function showPromotion(){
 	if(returnPromotion.length>0){
 		$('#standard').addClass('display-none');
 		$('#promotion').removeClass('display-none');
+		$('#promotion_list').removeClass('display-none');
 		$('#promotion_list').empty();
 		if(returnPromotion[0].checkCode==1){
 			checkpass=1;
@@ -529,9 +533,10 @@ function cancelPromoCode(){
 	$('#show_payment').removeClass('display-none');
 	$('#promotion_warning').addClass('display-none');
 	$('#promotion').addClass('display-none');
-	$('#payment_button').removeClass('display-none');
+	$('#promotion_list').addClass('display-none');
+	/*$('#payment_button').removeClass('display-none');
 	$('#promotion_button').addClass('display-none');
-	$('#promotion_input').addClass('display-none');
+	$('#promotion_input').addClass('display-none');*/
 	$('#promotion_txt').removeClass('display-none');
 	$('#promotion_txt_get').html('');
 }

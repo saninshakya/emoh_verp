@@ -1930,9 +1930,14 @@ public function uploadResized()
      				}
      			}
      		}
+     		
 
      		foreach($_FILES as $fieldname => $file){
      			if(!empty($file['name'])){
+
+     				$data['fieldname']= $fieldname;
+     				$groupPage=$this->backend->getGroupPage($data['fieldname']);
+     				
      				try {
      					$deviceType = strpos($fieldname, '_')?2:1;
      					if (!empty($file['name'])){
@@ -1945,6 +1950,7 @@ public function uploadResized()
      					}
 
      					$data = array(
+     						'group_page'=>$groupPage,
      						'page'=>$fieldname,
      						'device_type'=>$deviceType,
      						'filepath'=> $config['upload_path'].$file['name'],
@@ -1962,6 +1968,7 @@ public function uploadResized()
      			}
      		}
      	}
+     	redirect('/admin/listAdControl');
      }
 
      public function listAdControl(){
@@ -1987,6 +1994,46 @@ public function uploadResized()
      	$query=$this->db->query('update ImageAd set Active= "'.$array[1].'" Where id="'.$array[0].'"');
      	$array = array('success' => 'true');
      	echo json_encode($array);
+     }
+
+     public function availabilityDate(){
+     	$object =$_POST['data'];
+     	$array = json_decode($object);
+     	$pageSelected = $array[0];
+     	$dateSelected = $array[1];
+
+     	$rslt=$this->backend->checkDateAvailability($pageSelected, $dateSelected);
+
+     	if($rslt>0){
+     		$array = $arrayName = array(
+     			'success' => 'false',
+     			'msg' => 'NotAvailable',
+     			);
+     	}else{
+     		$array = $arrayName = array(
+     			'success' => 'true',
+     			'msg' => 'Available',
+     			);
+     	}
+     	echo json_encode($array);
+     }
+
+     public function editAdControl(){
+
+     	$checkAdmin=$this->backend->checkAdmin();
+     	if ($checkAdmin==1){
+     		$ChkLogin=$this->ChkLogin();
+     		$header=$this->header_inc($ChkLogin);
+     		$profile=$this->user_profile($ChkLogin);
+     		$this->load->view($header,$profile);
+     		$data['id']=$this->uri->segment(3);
+     		// $data['listAdControl']=$this->backend->listAdControl();
+     		$header=$this->header_inc($ChkLogin);
+     		$profile=$this->user_profile($ChkLogin);
+     		$this->load->view('editAdControl',$data);
+     		$this->load->view('footerstandard');
+     		$this->load->view('footer_home');
+     	}
      }
 
 //End Line CI_Controller Admin

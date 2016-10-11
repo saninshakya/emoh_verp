@@ -55,9 +55,29 @@ class Post extends CI_Model {
         $query=$this->db->query('select * from Post Where Token="'.$token.'"');
         return $query;
 	 }
+	 
+	function checkPostNew($TOProperty){
+		$user_id=$this->session->userdata('user_id');
+		if($TOProperty==1){//Condo
+			$TableName='Post';
+		}else{//House
+			$TableName='PostHouse';
+		}
+		$query=$this->db->query('select POID,Token from '.$TableName.' where Active=0 and (ProjectName is null or ProjectName="") and (OwnerName is null or OwnerName="") and user_id="'.$user_id.'"');
+		if($query->num_rows()==0){
+			$token=time().$user_id;
+			$token=md5($token);
+			$this->db->query('Insert into '.$TableName.' set Token="'.$token.'", user_id="'.$user_id.'",TOProperty="'.$TOProperty.'", DateCreate=now()');
+			$this->db->query('update '.$TableName.' set DateExpire=DATE_ADD(DateCreate, INTERVAL AgreePostDay DAY) where Token="'.$token.'" and user_id="'.$user_id.'"');
+		}else{
+			$row=$query->row();
+			$token=$row->Token;
+		}
+		$this->session->set_userdata('token',$token);
+		return 1;
+	}
 
-	 function newPost()
-	 {
+	function newPost(){
 		$datecreate=date("Y-m-d H:i:s");
 		$user_id=$this->session->userdata('user_id');
 		$this->db->query('SET NAMES utf8');
@@ -76,10 +96,9 @@ class Post extends CI_Model {
 				$this->db->query('update Post set DateExpire=DATE_ADD(DateCreate, INTERVAL AgreePostDay DAY) where Token="'.$token.'" and user_id="'.$user_id.'"');
 			};
 		};
-	 }
+	}
 
-	 function newPost2()
-	 {
+	function newPost2(){
 		$datecreate=date("Y-m-d H:i:s");
 		$user_id=$this->session->userdata('user_id');
 		if ($user_id==""){
@@ -93,7 +112,7 @@ class Post extends CI_Model {
 			$this->db->query('Insert into Post set Token="'.$token.'", user_id="'.$user_id.'", DateCreate="'.$datecreate.'"');
 			$this->db->query('update Post set DateExpire=DATE_ADD(DateCreate, INTERVAL AgreePostDay DAY) where Token="'.$token.'" and user_id="'.$user_id.'"');
 		};
-	 }
+	}
 
 	function updatePost1($data){
 		$token=$this->session->userdata('token');
@@ -253,11 +272,16 @@ class Post extends CI_Model {
 		$Token=$data['Token'];
 		$Value=$data['Value'];
 		$Type=$data['Type'];
+		if($data['TOProperty']=='1'){
+			$TableName='Post';
+		}else{
+			$TableName='PostHouse';
+		}
 		if ($Type=="Telephone1"){
 			$this->deactive($Token);
 		}
 		if ($Type=="TotalPrice"){
-			$query=$this->db->query('Select TotalPrice from Post Where Token="'.$Token.'" and user_id="'.$user_id.'"');
+			$query=$this->db->query('Select TotalPrice from '.$TableName.' Where Token="'.$Token.'" and user_id="'.$user_id.'"');
 			$row=$query->row();
 			$TotalPrice=$row->TotalPrice;
 			$Chk=abs(100-($data['Value']*100/$TotalPrice));
@@ -266,7 +290,7 @@ class Post extends CI_Model {
 			}
 		}
 		if ($Type=="PRentPrice"){
-			$query=$this->db->query('Select PRentPrice from Post Where Token="'.$Token.'" and user_id="'.$user_id.'"');
+			$query=$this->db->query('Select PRentPrice from '.$TableName.' Where Token="'.$Token.'" and user_id="'.$user_id.'"');
 			$row=$query->row();
 			$PRentPrice=$row->PRentPrice;
 			$Chk=abs(100-($data['Value']*100/$PRentPrice));
@@ -275,17 +299,17 @@ class Post extends CI_Model {
 			}
 		}
 		if ($Type=="AgreePostDay"){
-			$this->db->query('update Post set DateExpire=DATE_ADD(DateCreate, INTERVAL AgreePostDay DAY) where Token="'.$Token.'" and user_id="'.$user_id.'"');
+			$this->db->query('update '.$TableName.' set DateExpire=DATE_ADD(DateCreate, INTERVAL AgreePostDay DAY) where Token="'.$Token.'" and user_id="'.$user_id.'"');
 		}
 		if ($Type=='OwnerName'){
 			$this->deactive($Token);
-			$this->db->query('Update Post set Step1="0" Where Token="'.$Token.'" and user_id="'.$user_id.'"');
+			$this->db->query('Update '.$TableName.' set Step1="0" Where Token="'.$Token.'" and user_id="'.$user_id.'"');
 		}
 		if ($Type=='Tower'||$Type=='RoomNumber'||$Type=='Address'){
 			$this->deactive($Token);
-			$this->db->query('Update Post set Step2="0" Where Token="'.$Token.'" and user_id="'.$user_id.'"');
+			$this->db->query('Update '.$TableName.' set Step2="0" Where Token="'.$Token.'" and user_id="'.$user_id.'"');
 		}
-		$this->db->query('Update Post set '.$Type.'="'.$Value.'",DateUpdate=curdate() Where Token="'.$Token.'" and user_id="'.$user_id.'"');
+		$this->db->query('Update '.$TableName.' set '.$Type.'="'.$Value.'",DateUpdate=curdate() Where Token="'.$Token.'" and user_id="'.$user_id.'"');
 	}
 
 	function AdminUpdatePost($data)

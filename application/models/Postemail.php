@@ -359,11 +359,10 @@ class Postemail extends CI_Model {
 		return $query;
 	}
 
-	public function sendMultipleEmail($msg,$toemail,$subj){
+	public function sendMultipleEmail($msg,$toemail,$ccemail,$subj){
 		$query=$this->db->query('Select * from emailconfig where id=1');
 		$row=$query->row();
 		$subject=$subj;
-		$recipients=$toemail;
 
 		$mail = new PHPMailer();
 		$mail->IsSMTP();                       // telling the class to use SMTP
@@ -393,30 +392,21 @@ class Postemail extends CI_Model {
 		$mail->Subject = $subject;
 		$mail->Body = $msg; 
 		$mail->MsgHTML($msg);
-		if(is_array($recipients)){
-
-			foreach($recipients as $recipient)
-			{
-				$mail->AddAddress($recipient);
-				try {
-					$mail->Send();
-					$error_message = "Successfully sent!";
-				} catch (Exception $e) {
-					$error_message = "Mailer Error: " . $mail->ErrorInfo;
-				}
-			}
+		foreach($toemail as $recipient_to)
+		{
+			$mail->AddAddress($recipient_to);
+		}
+		foreach($ccemail as $recipient_cc)
+		{
+			$mail->AddCC($recipient_cc);
+		}
+		if($mail->Send()){
+			$error_message = "Successfully sent!";
 		}else{
-			$mail->AddAddress ($recipients);
-			if(!$mail->Send()) 
-			{
-				$error_message = "Mailer Error: " . $mail->ErrorInfo;
-			} else {
-				$error_message = "Successfully sent!";
-			}
-			// echo $error_message;
-
+			$error_message = "Mailer Error: " . $mail->ErrorInfo;
 		}
 		echo $error_message;
+		return;
 
 	}
 }
