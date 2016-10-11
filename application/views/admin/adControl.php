@@ -174,7 +174,7 @@
 				</tbody>
 			</table>
 			<?php echo form_submit('upload', 'Upload');?>    
-			<?php echo form_close(); ?>
+			<?php echo form_close(); ?> 
 			<!-- <input type="submit" name="btn-upload" value="Upload" disabled="" id="btn-upload"> -->
 		</div>
 	</form>
@@ -281,6 +281,29 @@
 			$(this).remove();
 			closest.find('span:first').html('');
 			$("#"+file).val('');
+		});
+
+		$("input[type=submit]").on("click", function(e) {
+			var $inputs = $('#adControl_form :input');
+			var values = {};
+			$inputs.each(function() {
+				var suffix = $(this).attr('id');
+				var startDate = 'startDate_'+suffix;
+				var endDate = 'endDate_'+suffix;
+
+				console.log('sanin: ',$(this).val());
+
+				if($(this).val() != "" ){
+					// $('input[name=startDate_coverBanner]').val();
+					if(($("[name=" + startDate+ "]").val()=='') || ($("[name=" + endDate+ "]").val()=='')){
+						alert(suffix + " is empty");
+					}
+				}
+				return false;
+			});
+			return false;
+
+
 		});
 	});
 </script>
