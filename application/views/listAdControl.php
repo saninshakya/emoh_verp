@@ -17,7 +17,6 @@
 				<th>Active</th>
 				<th>Action</th>
 			</tr>
-
 			<?php
 			$sn=1;
 			foreach ($listAdControl->result() as $row){

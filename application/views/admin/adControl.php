@@ -192,21 +192,19 @@
 		$(".datepicker").datepicker({
 			dateFormat: 'dd/mm/yy'
 		}).on("changeDate", function (e) {
+			var datefieldName = $(this).attr('name');
 			var pageId = $(this).closest('tr').find('td:first').next().find('input').attr('id');
 			var pcImageUploaded = document.getElementById(pageId).files.length;
 			var forMobile = pageId+'_mobile';
 			var mobileImageUploaded = document.getElementById(forMobile).files.length;
 			var dateSelected = formatDate(e.date.toString());
-			// var clickedDate = $(this).attr("id","clicked");
-
-			var me = $(this);
 
 			if(pcImageUploaded==1 || (pcImageUploaded==1 && mobileImageUploaded ==1)){
-				checkDateAvailable(pageId, dateSelected, me);
+				checkDateAvailable(pageId, dateSelected, datefieldName);
 				// pageId & dateSelected
 			}
 			else if(mobileImageUploaded == 1){
-				checkDateAvailable(forMobile, dateSelected, me);
+				checkDateAvailable(forMobile, dateSelected, datefieldName);
 				//forMobile & dateSelected
 			}
 			else{
@@ -216,17 +214,15 @@
 			}
 		});
 		//ajax post
-		function checkDateAvailable(pageSelected, dateSelected, me){
+		function checkDateAvailable(pageSelected, dateSelected, datefieldName){
 			var events = [];
 			events.push(pageSelected);
 			events.push(dateSelected);
-			me.attr("id","clicked");
 
 			$.post('/admin/availabilityDate',{data:JSON.stringify(events)},function(data){
 				if(data.success=='false'){
 					alert('Selected date is already been used');
-					$("#clicked").val('');
-					$('input#clicked').removeAttr('id');
+					$("[name=" + datefieldName+ "]").val('');
 					return false;
 				}
 			},'json');
